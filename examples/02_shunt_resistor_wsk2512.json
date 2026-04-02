@@ -1,0 +1,53 @@
+{
+    "resistor": {
+        "manufacturerInfo": {
+            "datasheetInfo": {
+                "part": {
+                    "partNumber": "WSK2512R0100FEA",
+                    "series": "WSK2512",
+                    "technology": "shunt",
+                    "case": "2512",
+                    "matchcodeDescription": "10mOhm 1% 1W 2512 Current Sense Shunt"
+                },
+                "electrical": {
+                    "resistance": {"nominal": 0.01},
+                    "tolerance": 0.01,
+                    "temperatureCoefficient": 75,
+                    "powerRating": 1.0,
+                    "powerRatingTemperature": 70,
+                    "maxVoltage": 50,
+                    "noiseIndex": null
+                },
+                "thermal": {
+                    "operatingTemperature": {"minimum": -55, "maximum": 170}
+                },
+                "mechanical": {
+                    "dimensions": {
+                        "length": {"nominal": 0.0064},
+                        "width": {"nominal": 0.0032},
+                        "height": {"nominal": 0.0006}
+                    },
+                    "shape": {
+                        "assembly": "SMT",
+                        "shapeType": "SMD Chip"
+                    }
+                },
+                "business": {
+                    "packaging": "Tape & Reel",
+                    "vpe": 4000,
+                    "moq": 4000,
+                    "priceCost": 0.12
+                },
+                "modelParams": {
+                    "r": 0.01,
+                    "tcr1": 75e-6,
+                    "tcr2": null
+                },
+                "factors": {
+                    "powerDeratingTemperature": [70, 100, 130, 155, 170],
+                    "powerDeratingAmplitude": [1.0, 0.7, 0.4, 0.15, 0.0]
+                }
+            }
+        }
+    }
+}

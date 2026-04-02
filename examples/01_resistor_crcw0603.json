@@ -1,0 +1,53 @@
+{
+    "resistor": {
+        "manufacturerInfo": {
+            "datasheetInfo": {
+                "part": {
+                    "partNumber": "CRCW060310K0FKEA",
+                    "series": "CRCW",
+                    "technology": "thickFilm",
+                    "case": "0603",
+                    "matchcodeDescription": "10kOhm 1% 0.1W 0603 Thick Film"
+                },
+                "electrical": {
+                    "resistance": {"nominal": 10000},
+                    "tolerance": 0.01,
+                    "temperatureCoefficient": 100,
+                    "powerRating": 0.1,
+                    "powerRatingTemperature": 70,
+                    "maxVoltage": 75,
+                    "maxOverloadVoltage": 150
+                },
+                "thermal": {
+                    "operatingTemperature": {"minimum": -55, "maximum": 155}
+                },
+                "mechanical": {
+                    "dimensions": {
+                        "length": {"nominal": 0.0016},
+                        "width": {"nominal": 0.0008},
+                        "height": {"nominal": 0.00045}
+                    },
+                    "shape": {
+                        "assembly": "SMT",
+                        "shapeType": "SMD Chip"
+                    }
+                },
+                "business": {
+                    "packaging": "Tape & Reel",
+                    "vpe": 5000,
+                    "moq": 5000,
+                    "priceCost": 0.003
+                },
+                "modelParams": {
+                    "r": 10000,
+                    "tcr1": 100e-6,
+                    "tcr2": null
+                },
+                "factors": {
+                    "powerDeratingTemperature": [70, 100, 125, 155],
+                    "powerDeratingAmplitude": [1.0, 0.65, 0.35, 0.0]
+                }
+            }
+        }
+    }
+}
