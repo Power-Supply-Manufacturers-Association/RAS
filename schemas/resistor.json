@@ -8,11 +8,13 @@
     "properties": {
         "manufacturerInfo": {
             "$ref": "#/$defs/manufacturerInfo"
+        },
+        "resistor": {
+            "description": "Resistor data wrapper (used by some DB entries)",
+            "type": "object"
         }
     },
-    "required": [
-        "manufacturerInfo"
-    ],
+    "required": [],
     "$defs": {
         "manufacturerInfo": {
             "description": "Container for manufacturer-specific information about the resistor",
@@ -156,12 +158,40 @@
             "properties": {
                 "operatingTemperature": {
                     "description": "Operating temperature range in Celsius",
-                    "anyOf": [
-                        {"$ref": "./utils.json#/$defs/dimensionWithTolerance"},
-                        {"type": "null"}
-                    ]
+                    "$ref": "./utils.json#/$defs/dimensionWithTolerance"
                 }
             },
+            "required": []
+        },
+        "dimensions": {
+            "description": "Physical dimensions of the component",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "width": {
+                    "description": "Width in meters",
+                    "$ref": "./utils.json#/$defs/dimensionWithTolerance"
+                },
+                "length": {
+                    "description": "Length in meters",
+                    "$ref": "./utils.json#/$defs/dimensionWithTolerance"
+                },
+                "height": {
+                    "description": "Height in meters",
+                    "$ref": "./utils.json#/$defs/dimensionWithTolerance"
+                }
+            },
+            "required": []
+        },
+        "shape": {
+            "description": "Component shape and assembly information",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "assembly": {
+                    "description": "Assembly type",
+                    "$ref": "./utils.json#/$defs/connectionType"
+                },
             "required": []
         },
         "mechanical": {
@@ -287,4 +317,5 @@
             "required": []
         }
     }
+}
 }
