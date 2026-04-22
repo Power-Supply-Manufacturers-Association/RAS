@@ -17,17 +17,23 @@
     "required": [],
     "$defs": {
         "manufacturerInfo": {
-            "description": "Container for manufacturer-specific information about the resistor",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "datasheetInfo": {
-                    "description": "Information extracted from the component datasheet",
-                    "$ref": "#/$defs/datasheetInfo"
+            "description": "Container for manufacturer-specific information about the resistor \u2014 extends EAS base with resistor-specific datasheetInfo.",
+            "allOf": [
+                {
+                    "$ref": "http://openconverters.com/schemas/EAS/utils.json#/$defs/manufacturerInfo"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "datasheetInfo": {
+                            "description": "Information extracted from the component datasheet",
+                            "$ref": "#/$defs/datasheetInfo"
+                        }
+                    },
+                    "required": [
+                        "datasheetInfo"
+                    ]
                 }
-            },
-            "required": [
-                "datasheetInfo"
             ]
         },
         "datasheetInfo": {
@@ -77,24 +83,44 @@
             "properties": {
                 "partNumber": {
                     "description": "Manufacturer part number",
-                    "type": ["string"]
+                    "type": [
+                        "string"
+                    ]
                 },
                 "series": {
                     "description": "Product series name",
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "technology": {
                     "description": "Resistor technology type",
-                    "type": ["string"],
-                    "enum": ["thinFilm", "thickFilm", "wirewound", "carbonComposition", "metalOxide", "foil", "shunt"]
+                    "type": [
+                        "string"
+                    ],
+                    "enum": [
+                        "thinFilm",
+                        "thickFilm",
+                        "wirewound",
+                        "carbonComposition",
+                        "metalOxide",
+                        "foil",
+                        "shunt"
+                    ]
                 },
                 "case": {
                     "description": "Case or package code",
-                    "type": ["string"]
+                    "type": [
+                        "string"
+                    ]
                 },
                 "matchcodeDescription": {
                     "description": "Human-readable description of the part",
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
             "required": [
@@ -114,35 +140,57 @@
                 },
                 "tolerance": {
                     "description": "Resistance tolerance as fraction (0.01 = 1%)",
-                    "type": ["number"]
+                    "type": [
+                        "number"
+                    ]
                 },
                 "temperatureCoefficient": {
                     "description": "Temperature coefficient of resistance in ppm/K",
-                    "type": ["number", "null"]
+                    "type": [
+                        "number",
+                        "null"
+                    ]
                 },
                 "powerRating": {
                     "description": "Maximum power rating in Watts at reference temperature",
-                    "type": ["number"]
+                    "type": [
+                        "number"
+                    ]
                 },
                 "powerRatingTemperature": {
                     "description": "Reference temperature for power rating in Celsius",
-                    "type": ["number", "null"]
+                    "type": [
+                        "number",
+                        "null"
+                    ]
                 },
                 "maxVoltage": {
                     "description": "Maximum working voltage in Volts",
-                    "type": ["number", "null"]
+                    "type": [
+                        "number",
+                        "null"
+                    ]
                 },
                 "maxOverloadVoltage": {
                     "description": "Maximum overload voltage in Volts",
-                    "type": ["number", "null"]
+                    "type": [
+                        "number",
+                        "null"
+                    ]
                 },
                 "insulationResistance": {
                     "description": "Insulation resistance in Ohms",
-                    "type": ["number", "null"]
+                    "type": [
+                        "number",
+                        "null"
+                    ]
                 },
                 "noiseIndex": {
                     "description": "Current noise index in dB",
-                    "type": ["number", "null"]
+                    "type": [
+                        "number",
+                        "null"
+                    ]
                 }
             },
             "required": [
@@ -192,130 +240,176 @@
                     "description": "Assembly type",
                     "$ref": "./utils.json#/$defs/connectionType"
                 },
-            "required": []
-        },
-        "mechanical": {
-            "description": "Mechanical dimensions and shape information",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "dimensions": {
-                    "description": "Physical dimensions",
-                    "$ref": "#/$defs/dimensions"
-                },
-                "shape": {
-                    "description": "Shape and assembly",
-                    "$ref": "#/$defs/shape"
-                }
+                "required": []
             },
-            "required": ["shape"]
-        },
-        "dimensions": {
-            "description": "Physical dimensions of the component",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "width": {
-                    "description": "Width in meters",
-                    "anyOf": [
-                        {"$ref": "./utils.json#/$defs/dimensionWithTolerance"},
-                        {"type": "null"}
-                    ]
+            "mechanical": {
+                "description": "Mechanical dimensions and shape information",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "dimensions": {
+                        "description": "Physical dimensions",
+                        "$ref": "#/$defs/dimensions"
+                    },
+                    "shape": {
+                        "description": "Shape and assembly",
+                        "$ref": "#/$defs/shape"
+                    }
                 },
-                "length": {
-                    "description": "Length in meters",
-                    "anyOf": [
-                        {"$ref": "./utils.json#/$defs/dimensionWithTolerance"},
-                        {"type": "null"}
-                    ]
-                },
-                "height": {
-                    "description": "Height in meters",
-                    "anyOf": [
-                        {"$ref": "./utils.json#/$defs/dimensionWithTolerance"},
-                        {"type": "null"}
-                    ]
-                }
+                "required": [
+                    "shape"
+                ]
             },
-            "required": []
-        },
-        "shape": {
-            "description": "Component shape and assembly information",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "assembly": {
-                    "description": "Assembly type",
-                    "type": ["string"],
-                    "enum": ["SMT", "THT", "Chassis"]
+            "dimensions": {
+                "description": "Physical dimensions of the component",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "width": {
+                        "description": "Width in meters",
+                        "anyOf": [
+                            {
+                                "$ref": "./utils.json#/$defs/dimensionWithTolerance"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "length": {
+                        "description": "Length in meters",
+                        "anyOf": [
+                            {
+                                "$ref": "./utils.json#/$defs/dimensionWithTolerance"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "height": {
+                        "description": "Height in meters",
+                        "anyOf": [
+                            {
+                                "$ref": "./utils.json#/$defs/dimensionWithTolerance"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
                 },
-                "shapeType": {
-                    "description": "Package shape type",
-                    "type": ["string"]
-                }
+                "required": []
             },
-            "required": ["assembly", "shapeType"]
-        },
-        "business": {
-            "description": "Commercial and supply chain information",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "packaging": {
-                    "description": "Packaging format",
-                    "type": ["string", "null"]
+            "shape": {
+                "description": "Component shape and assembly information",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "assembly": {
+                        "description": "Assembly type",
+                        "type": [
+                            "string"
+                        ],
+                        "enum": [
+                            "SMT",
+                            "THT",
+                            "Chassis"
+                        ]
+                    },
+                    "shapeType": {
+                        "description": "Package shape type",
+                        "type": [
+                            "string"
+                        ]
+                    }
                 },
-                "vpe": {
-                    "description": "Units per package/reel",
-                    "type": ["integer", "null"]
-                },
-                "moq": {
-                    "description": "Minimum order quantity",
-                    "type": ["integer", "null"]
-                },
-                "priceCost": {
-                    "description": "Cost price",
-                    "type": ["number", "null"]
-                }
+                "required": [
+                    "assembly",
+                    "shapeType"
+                ]
             },
-            "required": []
-        },
-        "modelParams": {
-            "description": "SPICE model parameters for circuit simulation",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "r": {
-                    "description": "Resistance in Ohms",
-                    "type": ["number", "null"]
+            "business": {
+                "description": "Commercial and supply chain information",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "packaging": {
+                        "description": "Packaging format",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "vpe": {
+                        "description": "Units per package/reel",
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "moq": {
+                        "description": "Minimum order quantity",
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "priceCost": {
+                        "description": "Cost price",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    }
                 },
-                "tcr1": {
-                    "description": "First-order temperature coefficient in 1/K",
-                    "type": ["number", "null"]
-                },
-                "tcr2": {
-                    "description": "Second-order temperature coefficient in 1/K^2",
-                    "type": ["number", "null"]
-                }
+                "required": []
             },
-            "required": []
-        },
-        "factors": {
-            "description": "Derating factors as functions of temperature",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "powerDeratingTemperature": {
-                    "description": "Temperature values for power derating curve in Celsius",
-                    "$ref": "./utils.json#/$defs/numberArray"
+            "modelParams": {
+                "description": "SPICE model parameters for circuit simulation",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "r": {
+                        "description": "Resistance in Ohms",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "tcr1": {
+                        "description": "First-order temperature coefficient in 1/K",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "tcr2": {
+                        "description": "Second-order temperature coefficient in 1/K^2",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    }
                 },
-                "powerDeratingAmplitude": {
-                    "description": "Power derating factors (fraction of rated power) at specified temperatures",
-                    "$ref": "./utils.json#/$defs/numberArray"
-                }
+                "required": []
             },
-            "required": []
+            "factors": {
+                "description": "Derating factors as functions of temperature",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "powerDeratingTemperature": {
+                        "description": "Temperature values for power derating curve in Celsius",
+                        "$ref": "./utils.json#/$defs/numberArray"
+                    },
+                    "powerDeratingAmplitude": {
+                        "description": "Power derating factors (fraction of rated power) at specified temperatures",
+                        "$ref": "./utils.json#/$defs/numberArray"
+                    }
+                },
+                "required": []
+            }
         }
     }
-}
 }
