@@ -1,0 +1,271 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "http://openconverters.com/schemas/RAS/outputs.json",
+    "$comment": "SPDX-License-Identifier: Apache-2.0",
+    "title": "outputs",
+    "description": "Outputs computed for one operating point of a resistor. Each named block is independently optional; every block carries the EAS outputBase {origin, methodUsed} provenance shell. The top-level RAS document holds an array of these — outputs[i] aligns positionally with inputs.operatingPoints[i].",
+    "type": "object",
+    "properties": {
+        "powerDissipation": {
+            "description": "Steady-state Joule heating from the operating point's RMS current and voltage.",
+            "$ref": "#/$defs/powerDissipationOutput"
+        },
+        "temperature": {
+            "description": "Hot-spot temperature reached under the operating point's dissipation.",
+            "$ref": "#/$defs/temperatureOutput"
+        },
+        "effectiveResistance": {
+            "description": "Resistance value after applying TCR shift and (where relevant) self-heating.",
+            "$ref": "#/$defs/effectiveResistanceOutput"
+        },
+        "pulseStress": {
+            "description": "Pulse-handling check: applied pulse energy compared against rated pulse withstand.",
+            "$ref": "#/$defs/pulseStressOutput"
+        },
+        "lifetime": {
+            "description": "Predicted load life under the operating point.",
+            "$ref": "#/$defs/lifetimeOutput"
+        },
+        "noise": {
+            "description": "Current-noise output under operating bias.",
+            "$ref": "#/$defs/noiseOutput"
+        },
+        "drift": {
+            "description": "Estimated long-term resistance drift over the predicted lifetime.",
+            "$ref": "#/$defs/driftOutput"
+        }
+    },
+    "required": [],
+    "$defs": {
+        "powerDissipationOutput": {
+            "title": "powerDissipationOutput",
+            "allOf": [
+                {
+                    "$ref": "../../EAS/schemas/outputs/outputBase.json"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "totalDissipation": {
+                            "description": "Total power dissipated by the resistor, in W.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "rmsCurrent": {
+                            "description": "RMS current through the resistor used in the calculation, in A.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "rmsVoltage": {
+                            "description": "RMS voltage across the resistor used in the calculation, in V.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "deratingMargin": {
+                            "description": "totalDissipation / ratedPower at the ambient. < 1 means within rating.",
+                            "type": "number",
+                            "minimum": 0
+                        }
+                    },
+                    "required": [
+                        "totalDissipation"
+                    ]
+                }
+            ]
+        },
+        "temperatureOutput": {
+            "title": "temperatureOutput",
+            "allOf": [
+                {
+                    "$ref": "../../EAS/schemas/outputs/outputBase.json"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "ambientTemperature": {
+                            "description": "Ambient temperature assumed for this calculation, in Celsius.",
+                            "type": "number"
+                        },
+                        "temperatureRise": {
+                            "description": "Self-heating temperature rise above ambient, in Kelvin.",
+                            "type": "number"
+                        },
+                        "hotSpotTemperature": {
+                            "description": "Hottest predicted point on the resistor body, in Celsius.",
+                            "type": "number"
+                        },
+                        "thermalResistance": {
+                            "description": "Effective thermal resistance from hot spot to ambient, in K/W.",
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "hotSpotTemperature"
+                    ]
+                }
+            ]
+        },
+        "effectiveResistanceOutput": {
+            "title": "effectiveResistanceOutput",
+            "allOf": [
+                {
+                    "$ref": "../../EAS/schemas/outputs/outputBase.json"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "effectiveResistance": {
+                            "description": "Resistance value at the operating temperature (R_nom * (1 + TCR * dT)), in Ohm.",
+                            "$ref": "../../EAS/schemas/utils.json#/$defs/dimensionWithTolerance"
+                        },
+                        "ratedResistance": {
+                            "description": "Nominal resistance from the datasheet, in Ohm.",
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        },
+                        "tcrApplied": {
+                            "description": "Temperature coefficient used in the calculation, in ppm/K.",
+                            "type": "number"
+                        },
+                        "conditions": {
+                            "$ref": "../../EAS/schemas/outputs/measurementCondition.json"
+                        }
+                    },
+                    "required": [
+                        "effectiveResistance"
+                    ]
+                }
+            ]
+        },
+        "pulseStressOutput": {
+            "title": "pulseStressOutput",
+            "description": "Pulse-handling check. Headline is `passes` (boolean); the energy values and margin let the caller see how close to the limit the operating point runs.",
+            "allOf": [
+                {
+                    "$ref": "../../EAS/schemas/outputs/outputBase.json"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "appliedPulseEnergy": {
+                            "description": "Pulse energy delivered at the operating point, in J.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "appliedPulsePower": {
+                            "description": "Peak pulse power delivered at the operating point, in W.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "ratedPulseEnergy": {
+                            "description": "Pulse-energy withstand from the resistor's pulse rating curve at the same pulse duration, in J.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "margin": {
+                            "description": "1 - applied/rated. Negative means the rating is exceeded.",
+                            "type": "number"
+                        },
+                        "passes": {
+                            "description": "Whether the applied stress is within the rated pulse withstand.",
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "passes"
+                    ]
+                }
+            ]
+        },
+        "lifetimeOutput": {
+            "title": "lifetimeOutput",
+            "allOf": [
+                {
+                    "$ref": "../../EAS/schemas/outputs/outputBase.json"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "predictedHours": {
+                            "description": "Predicted load life under this operating point, in hours.",
+                            "$ref": "../../EAS/schemas/utils.json#/$defs/dimensionWithTolerance"
+                        },
+                        "predictedYears": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "endOfLifeMode": {
+                            "description": "Predicted dominant end-of-life mechanism.",
+                            "type": "string",
+                            "enum": [
+                                "openCircuit",
+                                "shortCircuit",
+                                "resistanceDrift",
+                                "thermalRunaway",
+                                "soldersFatigue"
+                            ]
+                        },
+                        "conditions": {
+                            "$ref": "../../EAS/schemas/outputs/measurementCondition.json"
+                        }
+                    },
+                    "required": [
+                        "predictedHours"
+                    ]
+                }
+            ]
+        },
+        "noiseOutput": {
+            "title": "noiseOutput",
+            "allOf": [
+                {
+                    "$ref": "../../EAS/schemas/outputs/outputBase.json"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "currentNoiseIndex": {
+                            "description": "Current noise index at the operating bias, in dB.",
+                            "type": "number"
+                        },
+                        "noiseVoltageRms": {
+                            "description": "Equivalent RMS noise voltage in a defined bandwidth, in V.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "bandwidth": {
+                            "description": "Bandwidth used to compute noiseVoltageRms, in Hz.",
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        },
+                        "conditions": {
+                            "$ref": "../../EAS/schemas/outputs/measurementCondition.json"
+                        }
+                    }
+                }
+            ]
+        },
+        "driftOutput": {
+            "title": "driftOutput",
+            "allOf": [
+                {
+                    "$ref": "../../EAS/schemas/outputs/outputBase.json"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "predictedDriftPercent": {
+                            "description": "Estimated long-term drift in resistance over the predicted lifetime, in % of nominal.",
+                            "type": "number"
+                        },
+                        "horizonHours": {
+                            "description": "Time horizon over which the drift estimate applies, in hours.",
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
