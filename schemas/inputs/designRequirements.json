@@ -3,17 +3,17 @@
     "$id": "http://openconverters.com/schemas/RAS/inputs/designRequirements.json",
     "$comment": "SPDX-License-Identifier: Apache-2.0",
     "title": "designRequirements",
-    "description": "The list of requirements that a given resistor must comply with. Built on top of the EAS designRequirementsBase mixin, with resistor-specific required specs (resistance + powerRating) and a narrowed role / allowedTechnologies / application / subApplication.",
+    "description": "The list of requirements that a given resistor must comply with. Built on top of the PEAS designRequirementsBase mixin, with resistor-specific required specs (resistance + powerRating) and a narrowed role / allowedTechnologies / application / subApplication.",
     "allOf": [
         {
-            "$ref": "../../../EAS/schemas/utils.json#/$defs/designRequirementsBase"
+            "$ref": "../../../PEAS/schemas/utils.json#/$defs/designRequirementsBase"
         },
         {
             "type": "object",
             "properties": {
                 "resistance": {
                     "description": "Required values for the resistance, in Ohm",
-                    "$ref": "../../../EAS/schemas/utils.json#/$defs/dimensionWithTolerance"
+                    "$ref": "../../../PEAS/schemas/utils.json#/$defs/dimensionWithTolerance"
                 },
                 "powerRating": {
                     "description": "Required continuous power dissipation rating, in W (typically at the manufacturer-specified ambient or case temperature)",
@@ -96,10 +96,10 @@
                     "uniqueItems": true
                 },
                 "application": {
-                    "$ref": "../../../EAS/schemas/utils.json#/$defs/resistorApplication"
+                    "$ref": "../../../PEAS/schemas/utils.json#/$defs/resistorApplication"
                 },
                 "subApplication": {
-                    "$ref": "../../../EAS/schemas/utils.json#/$defs/resistorSubApplication"
+                    "$ref": "../../../PEAS/schemas/utils.json#/$defs/resistorSubApplication"
                 }
             },
             "required": [

@@ -15,7 +15,7 @@
 
 **RAS is a standardized way to describe resistor components** used in power electronics and general electronics design. It captures everything about a resistor -- identification, electrical characteristics, thermal behavior, mechanical dimensions, simulation parameters, and derating curves -- in a single machine-readable JSON document.
 
-RAS is part of the [OpenConverters](https://github.com/OpenConverters) ecosystem and follows the same structural pattern established by [MAS (Magnetic Agnostic Structure)](https://github.com/OpenMagnetics/MAS). A valid RAS document, when wrapped with `inputs` and `outputs`, is also a valid [EAS (Electronic Agnostic Structure)](../EAS/) document.
+RAS is part of the [OpenConverters](https://github.com/OpenConverters) ecosystem and follows the same structural pattern established by [MAS (Magnetic Agnostic Structure)](https://github.com/OpenMagnetics/MAS). A valid RAS document, when wrapped with `inputs` and `outputs`, is also a valid [PEAS (Power Electronics Agnostic Structure)](../PEAS/) document.
 
 ### The Problem RAS Solves
 
@@ -259,17 +259,17 @@ Key points:
 ## Relationship to Other Schemas
 
 ```
-EAS (Electronic Agnostic Structure) -- abstract base
+PEAS (Power Electronics Agnostic Structure) -- abstract base
  +-- MAS (Magnetic)    -- inductors, transformers, chokes
  +-- SAS (Semiconductor) -- MOSFETs, diodes, IGBTs
  +-- CAS (Capacitor)   -- ceramic, electrolytic, film caps
  +-- RAS (Resistor)    -- this schema
  |
  +-> TAS (Topology Agnostic Structure) -- complete converter designs
-       references EAS components (inline or by path)
+       references PEAS components (inline or by path)
 ```
 
-A RAS document with `inputs` and `outputs` is a valid EAS document. TAS references EAS documents to describe complete power converter designs, where resistors serve roles such as `currentSenseResistor`, `gateResistor`, `feedbackResistor`, `bleederResistor`, `snubberResistor`, or `clampResistor`.
+A RAS document with `inputs` and `outputs` is a valid PEAS document. TAS references PEAS documents to describe complete power converter designs, where resistors serve roles such as `currentSenseResistor`, `gateResistor`, `feedbackResistor`, `bleederResistor`, `snubberResistor`, or `clampResistor`.
 
 ---
 

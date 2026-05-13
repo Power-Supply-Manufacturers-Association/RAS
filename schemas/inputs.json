@@ -3,7 +3,7 @@
     "$id": "http://openconverters.com/schemas/RAS/inputs.json",
     "$comment": "SPDX-License-Identifier: Apache-2.0",
     "title": "inputs",
-    "description": "The description of the inputs that can be used to design or evaluate a Resistor. Mirrors the MAS / CAS inputs structure (operatingPoints[] + designRequirements). Operating points use the EAS twoTerminalOperatingPoint template since resistors are two-terminal.",
+    "description": "The description of the inputs that can be used to design or evaluate a Resistor. Mirrors the MAS / CAS inputs structure (operatingPoints[] + designRequirements). Operating points use the PEAS twoTerminalOperatingPoint template since resistors are two-terminal.",
     "type": "object",
     "properties": {
         "operatingPoints": {
@@ -11,7 +11,7 @@
             "title": "operatingPoints",
             "type": "array",
             "items": {
-                "$ref": "../../EAS/schemas/inputs/twoTerminalOperatingPoint.json"
+                "$ref": "../../PEAS/schemas/inputs/twoTerminalOperatingPoint.json"
             },
             "minItems": 1
         },
