@@ -1,0 +1,96 @@
+{
+    "inputs": {
+        "operatingPoints": [
+            {
+                "name": "ac mains surge protection",
+                "conditions": {
+                    "ambientTemperature": 25
+                },
+                "excitation": {
+                    "frequency": 50,
+                    "voltage": {
+                        "processed": {
+                            "label": "sinusoidal",
+                            "peak": 325,
+                            "offset": 0
+                        }
+                    },
+                    "current": {
+                        "processed": {
+                            "label": "sinusoidal",
+                            "peak": 0.0005,
+                            "offset": 0
+                        }
+                    }
+                }
+            }
+        ],
+        "designRequirements": {
+            "name": "230 Vac mains surge clamp",
+            "deviceType": "varistor",
+            "ratedContinuousVoltage": 275,
+            "voltageType": "ac",
+            "maximumClampingVoltage": 710,
+            "minimumPeakSurgeCurrent": 6000,
+            "minimumEnergyAbsorption": 80,
+            "role": "surgeProtection",
+            "allowedTechnologies": ["metalOxide"]
+        }
+    },
+    "varistor": {
+        "manufacturerInfo": {
+            "name": "EPCOS / TDK",
+            "reference": "B72214S2271K101",
+            "status": "production",
+            "datasheetInfo": {
+                "part": {
+                    "partNumber": "B72214S2271K101",
+                    "series": "S14K",
+                    "technology": "metalOxide",
+                    "case": "S14",
+                    "matchcodeDescription": "275 Vrms / 6 kA / 14 mm disc MOV"
+                },
+                "electrical": {
+                    "varistorVoltage": { "minimum": 387, "nominal": 430, "maximum": 473 },
+                    "maxContinuousAcVoltage": 275,
+                    "maxContinuousDcVoltage": 350,
+                    "clampingVoltage": 710,
+                    "clampingCurrent": 100,
+                    "peakSurgeCurrent": 6000,
+                    "surgeWaveform": "8/20",
+                    "energyAbsorption": 110,
+                    "capacitance": 320e-12,
+                    "leakageCurrent": 50e-6,
+                    "nonlinearityCoefficient": 35
+                },
+                "thermal": {
+                    "operatingTemperature": { "minimum": -40, "maximum": 85 }
+                },
+                "mechanical": {
+                    "assemblyType": "tht",
+                    "case": "S14",
+                    "shapeType": "Disc",
+                    "diameter": { "nominal": 0.014 },
+                    "height": { "nominal": 0.0042 }
+                },
+                "business": {
+                    "packaging": "Bulk",
+                    "vpe": 1000,
+                    "moq": 1,
+                    "cost": 0.18
+                }
+            }
+        },
+        "distributorsInfo": [
+            {
+                "name": "Digi-Key",
+                "reference": "495-2424-ND",
+                "cost": 0.22,
+                "stock": 18000
+            }
+        ]
+    },
+    "outputs": [
+        {}
+    ]
+}

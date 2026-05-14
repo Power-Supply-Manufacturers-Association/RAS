@@ -2,22 +2,27 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "http://openconverters.com/schemas/RAS/RAS.json",
     "title": "RAS",
-    "description": "Resistor Agnostic Structure (RAS). When wrapped with inputs + outputs, forms a valid PEAS document.",
+    "description": "Resistor-family Agnostic Structure (RAS). A document carries inputs, exactly one of {resistor, varistor} (the field name is the discriminator), and outputs.",
     "type": "object",
     "additionalProperties": false,
     "properties": {
         "inputs": {
-            "description": "Design requirements and operating points for this resistor",
+            "description": "Design requirements and operating points for this component",
             "title": "inputs",
             "$ref": "./inputs.json"
         },
         "resistor": {
-            "description": "The resistor component data",
+            "description": "Fixed resistor",
             "title": "resistor",
             "$ref": "./resistor.json"
         },
+        "varistor": {
+            "description": "Varistor / MOV",
+            "title": "varistor",
+            "$ref": "./varistor.json"
+        },
         "outputs": {
-            "description": "Computed results per operating point. outputs[i] aligns positionally with inputs.operatingPoints[i]. Mirrors the MAS pattern (array of per-operating-point bundles).",
+            "description": "Computed results per operating point. outputs[i] aligns positionally with inputs.operatingPoints[i].",
             "title": "outputs",
             "type": "array",
             "items": {
@@ -25,5 +30,20 @@
             }
         }
     },
-    "required": ["inputs", "resistor", "outputs"]
+    "required": [
+        "inputs",
+        "outputs"
+    ],
+    "oneOf": [
+        {
+            "required": [
+                "resistor"
+            ]
+        },
+        {
+            "required": [
+                "varistor"
+            ]
+        }
+    ]
 }

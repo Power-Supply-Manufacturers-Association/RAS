@@ -1,6 +1,43 @@
 {
+    "inputs": {
+        "operatingPoints": [
+            {
+                "name": "nominal",
+                "conditions": {
+                    "ambientTemperature": 25
+                },
+                "excitation": {
+                    "frequency": 1000,
+                    "voltage": {
+                        "processed": {
+                            "label": "sinusoidal",
+                            "peak": 5,
+                            "offset": 0
+                        }
+                    },
+                    "current": {
+                        "processed": {
+                            "label": "sinusoidal",
+                            "peak": 0.0005,
+                            "offset": 0
+                        }
+                    }
+                }
+            }
+        ],
+        "designRequirements": {
+            "name": "10k feedback divider",
+            "deviceType": "resistor",
+            "resistance": { "nominal": 10000 },
+            "powerRating": 0.1,
+            "maximumTcr": 200,
+            "allowedTechnologies": ["thinFilm", "thickFilm"]
+        }
+    },
     "resistor": {
         "manufacturerInfo": {
+            "name": "Vishay",
+            "reference": "CRCW060310K0FKEA",
             "datasheetInfo": {
                 "part": {
                     "partNumber": "CRCW060310K0FKEA",
@@ -10,7 +47,7 @@
                     "matchcodeDescription": "10kOhm 1% 0.1W 0603 Thick Film"
                 },
                 "electrical": {
-                    "resistance": {"nominal": 10000},
+                    "resistance": { "nominal": 10000 },
                     "tolerance": 0.01,
                     "temperatureCoefficient": 100,
                     "powerRating": 0.1,
@@ -19,35 +56,36 @@
                     "maxOverloadVoltage": 150
                 },
                 "thermal": {
-                    "operatingTemperature": {"minimum": -55, "maximum": 155}
+                    "operatingTemperature": { "minimum": -55, "maximum": 155 }
                 },
                 "mechanical": {
-                    "dimensions": {
-                        "length": {"nominal": 0.0016},
-                        "width": {"nominal": 0.0008},
-                        "height": {"nominal": 0.00045}
-                    },
-                    "shape": {
-                        "assembly": "SMT",
-                        "shapeType": "SMD Chip"
-                    }
+                    "assemblyType": "smt",
+                    "case": "0603",
+                    "shapeType": "SMD chip",
+                    "length": { "nominal": 0.0016 },
+                    "width": { "nominal": 0.0008 },
+                    "height": { "nominal": 0.00045 }
                 },
                 "business": {
                     "packaging": "Tape & Reel",
                     "vpe": 5000,
                     "moq": 5000,
-                    "priceCost": 0.003
+                    "cost": 0.003
                 },
                 "modelParams": {
                     "r": 10000,
-                    "tcr1": 100e-6,
-                    "tcr2": null
+                    "tcr1": 100e-6
                 },
                 "factors": {
-                    "powerDeratingTemperature": [70, 100, 125, 155],
-                    "powerDeratingAmplitude": [1.0, 0.65, 0.35, 0.0]
+                    "powerDerating": {
+                        "temperature": [70, 100, 125, 155],
+                        "amplitude": [1.0, 0.65, 0.35, 0.0]
+                    }
                 }
             }
         }
-    }
+    },
+    "outputs": [
+        {}
+    ]
 }

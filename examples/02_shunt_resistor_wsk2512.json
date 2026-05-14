@@ -1,53 +1,89 @@
 {
+    "inputs": {
+        "operatingPoints": [
+            {
+                "name": "nominal",
+                "conditions": {
+                    "ambientTemperature": 25
+                },
+                "excitation": {
+                    "frequency": 100000,
+                    "voltage": {
+                        "processed": {
+                            "label": "rectangular",
+                            "peak": 0.2,
+                            "offset": 0.1
+                        }
+                    },
+                    "current": {
+                        "processed": {
+                            "label": "rectangular",
+                            "peak": 20,
+                            "offset": 10
+                        }
+                    }
+                }
+            }
+        ],
+        "designRequirements": {
+            "name": "current sense shunt",
+            "deviceType": "resistor",
+            "resistance": { "nominal": 0.01 },
+            "powerRating": 1.0,
+            "allowedTechnologies": ["currentSenseShunt", "metalFoil", "wirewound"]
+        }
+    },
     "resistor": {
         "manufacturerInfo": {
+            "name": "Vishay",
+            "reference": "WSK2512R0100FEA",
             "datasheetInfo": {
                 "part": {
                     "partNumber": "WSK2512R0100FEA",
                     "series": "WSK2512",
-                    "technology": "shunt",
+                    "technology": "currentSenseShunt",
                     "case": "2512",
                     "matchcodeDescription": "10mOhm 1% 1W 2512 Current Sense Shunt"
                 },
                 "electrical": {
-                    "resistance": {"nominal": 0.01},
+                    "resistance": { "nominal": 0.01 },
                     "tolerance": 0.01,
                     "temperatureCoefficient": 75,
                     "powerRating": 1.0,
                     "powerRatingTemperature": 70,
-                    "maxVoltage": 50,
-                    "noiseIndex": null
+                    "maxVoltage": 50
                 },
                 "thermal": {
-                    "operatingTemperature": {"minimum": -55, "maximum": 170}
+                    "operatingTemperature": { "minimum": -55, "maximum": 170 }
                 },
                 "mechanical": {
-                    "dimensions": {
-                        "length": {"nominal": 0.0064},
-                        "width": {"nominal": 0.0032},
-                        "height": {"nominal": 0.0006}
-                    },
-                    "shape": {
-                        "assembly": "SMT",
-                        "shapeType": "SMD Chip"
-                    }
+                    "assemblyType": "smt",
+                    "case": "2512",
+                    "shapeType": "SMD chip",
+                    "length": { "nominal": 0.0064 },
+                    "width": { "nominal": 0.0032 },
+                    "height": { "nominal": 0.0006 }
                 },
                 "business": {
                     "packaging": "Tape & Reel",
                     "vpe": 4000,
                     "moq": 4000,
-                    "priceCost": 0.12
+                    "cost": 0.12
                 },
                 "modelParams": {
                     "r": 0.01,
-                    "tcr1": 75e-6,
-                    "tcr2": null
+                    "tcr1": 75e-6
                 },
                 "factors": {
-                    "powerDeratingTemperature": [70, 100, 130, 155, 170],
-                    "powerDeratingAmplitude": [1.0, 0.7, 0.4, 0.15, 0.0]
+                    "powerDerating": {
+                        "temperature": [70, 100, 130, 155, 170],
+                        "amplitude": [1.0, 0.7, 0.4, 0.15, 0.0]
+                    }
                 }
             }
         }
-    }
+    },
+    "outputs": [
+        {}
+    ]
 }

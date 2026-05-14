@@ -1,13 +1,13 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "http://openconverters.com/schemas/RAS/resistor.json",
-    "title": "resistor",
-    "description": "Resistor component data. The presence of the 'resistor' field at the top level of an RAS document discriminates the device type — there is no deviceType property.",
+    "$id": "http://openconverters.com/schemas/RAS/varistor.json",
+    "title": "varistor",
+    "description": "Varistor / MOV (Metal Oxide Varistor) component data. The presence of the 'varistor' field at the top level of an RAS document discriminates the device type — there is no deviceType property.",
     "type": "object",
     "additionalProperties": false,
     "properties": {
         "manufacturerInfo": {
-            "description": "Manufacturer-specific information — extends PEAS manufacturerInfo with resistor-specific datasheetInfo.",
+            "description": "Manufacturer-specific information — extends PEAS manufacturerInfo with varistor-specific datasheetInfo.",
             "allOf": [
                 {
                     "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/manufacturerInfo"
@@ -38,7 +38,7 @@
     ],
     "$defs": {
         "datasheetInfo": {
-            "description": "All information extracted from the resistor datasheet.",
+            "description": "All information extracted from the varistor datasheet.",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -57,11 +57,9 @@
                 "business": {
                     "$ref": "./utils.json#/$defs/business"
                 },
-                "modelParams": {
-                    "$ref": "#/$defs/modelParams"
-                },
-                "factors": {
-                    "$ref": "#/$defs/factors"
+                "viCurve": {
+                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/curve",
+                    "description": "Voltage vs current characteristic in the conduction region."
                 }
             },
             "required": [
@@ -70,7 +68,7 @@
             ]
         },
         "part": {
-            "description": "Basic resistor part identification.",
+            "description": "Basic varistor part identification.",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -86,22 +84,15 @@
                 "technology": {
                     "type": "string",
                     "enum": [
-                        "thinFilm",
-                        "thickFilm",
-                        "metalFilm",
                         "metalOxide",
-                        "wirewound",
-                        "carbonComposition",
-                        "carbonFilm",
-                        "metalFoil",
-                        "bulkMetalFoil",
-                        "currentSenseShunt",
-                        "melf"
+                        "siliconCarbide",
+                        "multiLayer",
+                        "polymer"
                     ]
                 },
                 "case": {
                     "type": "string",
-                    "description": "Package code (0603, 2512, etc.)"
+                    "description": "Package code (e.g. disc diameter '14D', '0805', etc.)."
                 },
                 "matchcodeDescription": {
                     "type": [
@@ -117,88 +108,70 @@
             ]
         },
         "electrical": {
-            "description": "Resistor electrical characteristics.",
+            "description": "Varistor electrical characteristics — every field is relevant to varistors / MOVs.",
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "resistance": {
-                    "description": "Nominal resistance, in Ohms.",
+                "varistorVoltage": {
+                    "description": "Varistor voltage V_1mA at the 1 mA reference current, in V.",
                     "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
                 },
-                "tolerance": {
-                    "description": "Resistance tolerance as a fraction (0.01 = 1%).",
+                "maxContinuousAcVoltage": {
+                    "description": "Maximum continuous AC working voltage (V_RMS), in V.",
                     "type": "number",
                     "minimum": 0
                 },
-                "temperatureCoefficient": {
-                    "description": "Temperature coefficient of resistance, in ppm/K.",
-                    "type": "number"
-                },
-                "powerRating": {
-                    "description": "Maximum power rating at the reference temperature, in W.",
+                "maxContinuousDcVoltage": {
+                    "description": "Maximum continuous DC working voltage, in V.",
                     "type": "number",
                     "minimum": 0
                 },
-                "powerRatingTemperature": {
-                    "description": "Reference temperature for the power rating, in Celsius.",
-                    "type": "number"
-                },
-                "maxVoltage": {
-                    "description": "Maximum continuous working voltage, in V.",
+                "clampingVoltage": {
+                    "description": "Clamping voltage V_C at the rated peak surge current I_PP, in V.",
                     "type": "number",
                     "minimum": 0
                 },
-                "maxOverloadVoltage": {
-                    "description": "Maximum short-pulse / overload voltage, in V.",
+                "clampingCurrent": {
+                    "description": "Test current at which the clamping voltage is specified, in A.",
                     "type": "number",
                     "minimum": 0
                 },
-                "insulationResistance": {
-                    "description": "Insulation resistance, in Ohms.",
+                "peakSurgeCurrent": {
+                    "description": "Peak surge current I_PP for the rated waveform (e.g. 8/20 µs), in A.",
                     "type": "number",
                     "minimum": 0
                 },
-                "noiseIndex": {
-                    "description": "Current noise index, in dB.",
-                    "type": "number"
+                "surgeWaveform": {
+                    "description": "Waveform of the rated surge in 'rise/decay' microseconds (e.g. '8/20').",
+                    "type": "string"
+                },
+                "energyAbsorption": {
+                    "description": "Maximum single-pulse energy absorption capability for a 10/1000 µs waveform, in J.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "capacitance": {
+                    "description": "Typical capacitance at 1 kHz, in F.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "leakageCurrent": {
+                    "description": "DC leakage current at the maximum continuous voltage, in A.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "nonlinearityCoefficient": {
+                    "description": "Non-linearity exponent α (V = k * I^(1/α)) in the varistor's conduction region.",
+                    "type": "number",
+                    "exclusiveMinimum": 0
                 }
             },
             "required": [
-                "resistance",
-                "tolerance",
-                "powerRating"
+                "varistorVoltage",
+                "clampingVoltage",
+                "peakSurgeCurrent",
+                "energyAbsorption"
             ]
-        },
-        "modelParams": {
-            "description": "SPICE model parameters for resistor.",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "r": {
-                    "description": "Resistance, in Ohms.",
-                    "type": "number",
-                    "exclusiveMinimum": 0
-                },
-                "tcr1": {
-                    "description": "First-order TCR, in 1/K.",
-                    "type": "number"
-                },
-                "tcr2": {
-                    "description": "Second-order TCR, in 1/K^2.",
-                    "type": "number"
-                }
-            }
-        },
-        "factors": {
-            "description": "Derating factors as functions of temperature.",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "powerDerating": {
-                    "description": "Power derating curve.",
-                    "$ref": "./utils.json#/$defs/deratingCurve"
-                }
-            }
         }
     }
 }

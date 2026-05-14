@@ -3,108 +3,199 @@
     "$id": "http://openconverters.com/schemas/RAS/inputs/designRequirements.json",
     "$comment": "SPDX-License-Identifier: Apache-2.0",
     "title": "designRequirements",
-    "description": "The list of requirements that a given resistor must comply with. Built on top of the PEAS designRequirementsBase mixin, with resistor-specific required specs (resistance + powerRating) and a narrowed role / allowedTechnologies / application / subApplication.",
+    "description": "The list of requirements that an RAS component (resistor or varistor) must comply with. Built on top of the PEAS designRequirementsBase mixin, with a deviceType discriminator that drives per-type required ratings — mirrors the SAS pattern.",
     "allOf": [
         {
-            "$ref": "../../../PEAS/schemas/utils.json#/$defs/designRequirementsBase"
+            "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/designRequirementsBase"
         },
         {
             "type": "object",
             "properties": {
-                "resistance": {
-                    "description": "Required values for the resistance, in Ohm",
-                    "$ref": "../../../PEAS/schemas/utils.json#/$defs/dimensionWithTolerance"
-                },
-                "powerRating": {
-                    "description": "Required continuous power dissipation rating, in W (typically at the manufacturer-specified ambient or case temperature)",
-                    "type": "number",
-                    "minimum": 0
+                "deviceType": {
+                    "description": "Required device type. Drives the per-type oneOf below and aligns with the RAS top-level field name.",
+                    "type": "string",
+                    "enum": [
+                        "resistor",
+                        "varistor"
+                    ]
                 },
                 "maximumWorkingVoltage": {
-                    "description": "Maximum DC working voltage allowed across the resistor, in V",
+                    "description": "Maximum DC working voltage allowed across the component, in V.",
                     "type": "number",
                     "minimum": 0
                 },
                 "maximumOverloadVoltage": {
-                    "description": "Maximum short-pulse / overload voltage, in V",
+                    "description": "Maximum short-pulse / overload voltage, in V.",
                     "type": "number",
                     "minimum": 0
-                },
-                "maximumTcr": {
-                    "description": "Maximum temperature coefficient of resistance, in ppm/K",
-                    "type": "number",
-                    "minimum": 0
-                },
-                "maximumDriftLongTerm": {
-                    "description": "Maximum allowed long-term resistance drift, in % over the operating life",
-                    "type": "number",
-                    "minimum": 0
-                },
-                "maximumNoise": {
-                    "description": "Maximum allowed current-noise index, in dB or microvolts/V depending on the technology",
-                    "type": "number"
-                },
-                "minimumPulseEnergy": {
-                    "description": "Minimum pulse-energy withstand requirement, in J",
-                    "type": "number",
-                    "minimum": 0
-                },
-                "maximumEsl": {
-                    "description": "Maximum equivalent series inductance, in H",
-                    "type": "number",
-                    "minimum": 0
-                },
-                "role": {
-                    "description": "Resistor role in the converter. Used together with 'topology' to pick the correct stress and lifetime model.",
-                    "type": "string",
-                    "enum": [
-                        "currentSense",
-                        "gate",
-                        "snubber",
-                        "damping",
-                        "bleed",
-                        "preCharge",
-                        "inrush",
-                        "divider",
-                        "feedback",
-                        "termination",
-                        "pullUp",
-                        "pullDown",
-                        "fusible"
-                    ]
-                },
-                "allowedTechnologies": {
-                    "description": "Subset of resistor technologies acceptable for this design. If absent, all technologies are allowed.",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "enum": [
-                            "thinFilm",
-                            "thickFilm",
-                            "metalFilm",
-                            "metalOxide",
-                            "wirewound",
-                            "carbonComposition",
-                            "carbonFilm",
-                            "metalFoil",
-                            "bulkMetalFoil",
-                            "currentSenseShunt",
-                            "melf"
-                        ]
-                    },
-                    "minItems": 1,
-                    "uniqueItems": true
                 },
                 "application": {
-                    "$ref": "../../../PEAS/schemas/utils.json#/$defs/resistorApplication"
+                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/resistorApplication"
                 },
                 "subApplication": {
-                    "$ref": "../../../PEAS/schemas/utils.json#/$defs/resistorSubApplication"
+                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/resistorSubApplication"
                 }
             },
             "required": [
-                "resistance",
-                "powerRating"
+                "deviceType"
+            ],
+            "oneOf": [
+                {
+                    "description": "Resistor-specific requirements",
+                    "properties": {
+                        "deviceType": {
+                            "const": "resistor"
+                        },
+                        "resistance": {
+                            "description": "Required values for the resistance, in Ohm.",
+                            "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
+                        },
+                        "powerRating": {
+                            "description": "Required continuous power dissipation rating, in W.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "maximumTcr": {
+                            "description": "Maximum temperature coefficient of resistance, in ppm/K.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "maximumDriftLongTerm": {
+                            "description": "Maximum allowed long-term resistance drift, in % over the operating life.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "maximumNoise": {
+                            "description": "Maximum allowed current-noise index, in dB.",
+                            "type": "number"
+                        },
+                        "minimumPulseEnergy": {
+                            "description": "Minimum pulse-energy withstand requirement, in J.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "maximumEsl": {
+                            "description": "Maximum equivalent series inductance, in H.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "role": {
+                            "description": "Resistor role in the converter.",
+                            "type": "string",
+                            "enum": [
+                                "currentSense",
+                                "gate",
+                                "snubber",
+                                "damping",
+                                "bleed",
+                                "preCharge",
+                                "inrush",
+                                "divider",
+                                "feedback",
+                                "termination",
+                                "pullUp",
+                                "pullDown",
+                                "fusible"
+                            ]
+                        },
+                        "allowedTechnologies": {
+                            "description": "Subset of resistor technologies acceptable for this design. If absent, all technologies are allowed.",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "thinFilm",
+                                    "thickFilm",
+                                    "metalFilm",
+                                    "metalOxide",
+                                    "wirewound",
+                                    "carbonComposition",
+                                    "carbonFilm",
+                                    "metalFoil",
+                                    "bulkMetalFoil",
+                                    "currentSenseShunt",
+                                    "melf"
+                                ]
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                        }
+                    },
+                    "required": [
+                        "resistance",
+                        "powerRating"
+                    ]
+                },
+                {
+                    "description": "Varistor-specific requirements",
+                    "properties": {
+                        "deviceType": {
+                            "const": "varistor"
+                        },
+                        "ratedContinuousVoltage": {
+                            "description": "Required minimum continuous working voltage rating (V_M), in V.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "voltageType": {
+                            "description": "Whether the continuous rating is AC RMS or DC.",
+                            "type": "string",
+                            "enum": [
+                                "ac",
+                                "dc"
+                            ]
+                        },
+                        "maximumClampingVoltage": {
+                            "description": "Maximum allowed clamping voltage at the rated surge current, in V.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "minimumPeakSurgeCurrent": {
+                            "description": "Required minimum peak surge current capability for the rated waveform, in A.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "minimumEnergyAbsorption": {
+                            "description": "Required minimum single-pulse energy absorption capability, in J.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "maximumCapacitance": {
+                            "description": "Maximum allowed capacitance, in F (lower = better for high-frequency lines).",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "role": {
+                            "description": "Varistor role in the converter.",
+                            "type": "string",
+                            "enum": [
+                                "surgeProtection",
+                                "esdProtection",
+                                "snubber",
+                                "voltageClamp"
+                            ]
+                        },
+                        "allowedTechnologies": {
+                            "description": "Subset of varistor technologies acceptable for this design.",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "metalOxide",
+                                    "siliconCarbide",
+                                    "multiLayer",
+                                    "polymer"
+                                ]
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                        }
+                    },
+                    "required": [
+                        "ratedContinuousVoltage",
+                        "minimumEnergyAbsorption"
+                    ]
+                }
             ]
         }
     ],

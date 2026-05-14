@@ -41,7 +41,7 @@
             "title": "powerDissipationOutput",
             "allOf": [
                 {
-                    "$ref": "../../PEAS/schemas/outputs/outputBase.json"
+                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
@@ -77,7 +77,7 @@
             "title": "temperatureOutput",
             "allOf": [
                 {
-                    "$ref": "../../PEAS/schemas/outputs/outputBase.json"
+                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
@@ -109,14 +109,14 @@
             "title": "effectiveResistanceOutput",
             "allOf": [
                 {
-                    "$ref": "../../PEAS/schemas/outputs/outputBase.json"
+                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
                     "properties": {
                         "effectiveResistance": {
                             "description": "Resistance value at the operating temperature (R_nom * (1 + TCR * dT)), in Ohm.",
-                            "$ref": "../../PEAS/schemas/utils.json#/$defs/dimensionWithTolerance"
+                            "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
                         },
                         "ratedResistance": {
                             "description": "Nominal resistance from the datasheet, in Ohm.",
@@ -128,7 +128,7 @@
                             "type": "number"
                         },
                         "conditions": {
-                            "$ref": "../../PEAS/schemas/outputs/measurementCondition.json"
+                            "$ref": "http://openconverters.com/schemas/PEAS/outputs/measurementCondition.json"
                         }
                     },
                     "required": [
@@ -142,7 +142,7 @@
             "description": "Pulse-handling check. Headline is `passes` (boolean); the energy values and margin let the caller see how close to the limit the operating point runs.",
             "allOf": [
                 {
-                    "$ref": "../../PEAS/schemas/outputs/outputBase.json"
+                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
@@ -181,14 +181,14 @@
             "title": "lifetimeOutput",
             "allOf": [
                 {
-                    "$ref": "../../PEAS/schemas/outputs/outputBase.json"
+                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
                     "properties": {
                         "predictedHours": {
                             "description": "Predicted load life under this operating point, in hours.",
-                            "$ref": "../../PEAS/schemas/utils.json#/$defs/dimensionWithTolerance"
+                            "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
                         },
                         "predictedYears": {
                             "type": "number",
@@ -206,7 +206,7 @@
                             ]
                         },
                         "conditions": {
-                            "$ref": "../../PEAS/schemas/outputs/measurementCondition.json"
+                            "$ref": "http://openconverters.com/schemas/PEAS/outputs/measurementCondition.json"
                         }
                     },
                     "required": [
@@ -219,7 +219,7 @@
             "title": "noiseOutput",
             "allOf": [
                 {
-                    "$ref": "../../PEAS/schemas/outputs/outputBase.json"
+                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
@@ -239,7 +239,7 @@
                             "exclusiveMinimum": 0
                         },
                         "conditions": {
-                            "$ref": "../../PEAS/schemas/outputs/measurementCondition.json"
+                            "$ref": "http://openconverters.com/schemas/PEAS/outputs/measurementCondition.json"
                         }
                     }
                 }
@@ -249,7 +249,7 @@
             "title": "driftOutput",
             "allOf": [
                 {
-                    "$ref": "../../PEAS/schemas/outputs/outputBase.json"
+                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
