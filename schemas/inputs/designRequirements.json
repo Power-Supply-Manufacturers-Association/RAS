@@ -1,12 +1,12 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "http://openconverters.com/schemas/RAS/inputs/designRequirements.json",
+    "$id": "https://psma.com/ras/inputs/designRequirements.json",
     "$comment": "SPDX-License-Identifier: Apache-2.0",
     "title": "designRequirements",
     "description": "The list of requirements that an RAS component (resistor or varistor) must comply with. Built on top of the PEAS designRequirementsBase mixin, with a deviceType discriminator that drives per-type required ratings — mirrors the SAS pattern.",
     "allOf": [
         {
-            "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/designRequirementsBase"
+            "$ref": "https://psma.com/peas/utils.json#/$defs/designRequirementsBase"
         },
         {
             "type": "object",
@@ -30,10 +30,10 @@
                     "minimum": 0
                 },
                 "application": {
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/resistorApplication"
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/resistorApplication"
                 },
                 "subApplication": {
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/resistorSubApplication"
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/resistorSubApplication"
                 }
             },
             "required": [
@@ -48,7 +48,7 @@
                         },
                         "resistance": {
                             "description": "Required values for the resistance, in Ohm.",
-                            "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
                         },
                         "powerRating": {
                             "description": "Required continuous power dissipation rating, in W.",

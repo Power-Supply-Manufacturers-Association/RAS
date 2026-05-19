@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "http://openconverters.com/schemas/RAS/inputs.json",
+    "$id": "https://psma.com/ras/inputs.json",
     "$comment": "SPDX-License-Identifier: Apache-2.0",
     "title": "inputs",
     "description": "The description of the inputs that can be used to design or evaluate a Resistor. Mirrors the MAS / CAS inputs structure (operatingPoints[] + designRequirements). Operating points use the PEAS twoTerminalOperatingPoint template since resistors are two-terminal.",
@@ -11,7 +11,7 @@
             "title": "operatingPoints",
             "type": "array",
             "items": {
-                "$ref": "http://openconverters.com/schemas/PEAS/inputs/twoTerminalOperatingPoint.json"
+                "$ref": "https://psma.com/peas/inputs/twoTerminalOperatingPoint.json"
             },
             "minItems": 1
         },

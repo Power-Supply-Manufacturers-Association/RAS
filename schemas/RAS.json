@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "http://openconverters.com/schemas/RAS/RAS.json",
+    "$id": "https://psma.com/ras/RAS.json",
     "title": "RAS",
     "description": "Resistor-family Agnostic Structure (RAS). A document carries inputs, exactly one of {resistor, varistor} (the field name is the discriminator), and outputs.",
     "type": "object",

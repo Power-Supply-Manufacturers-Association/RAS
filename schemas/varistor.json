@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "http://openconverters.com/schemas/RAS/varistor.json",
+    "$id": "https://psma.com/ras/varistor.json",
     "title": "varistor",
     "description": "Varistor / MOV (Metal Oxide Varistor) component data. The presence of the 'varistor' field at the top level of an RAS document discriminates the device type — there is no deviceType property.",
     "type": "object",
@@ -10,7 +10,7 @@
             "description": "Manufacturer-specific information — extends PEAS manufacturerInfo with varistor-specific datasheetInfo.",
             "allOf": [
                 {
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/manufacturerInfo"
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo"
                 },
                 {
                     "type": "object",
@@ -29,7 +29,7 @@
             "description": "Where to buy this component",
             "type": "array",
             "items": {
-                "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/distributorInfo"
+                "$ref": "https://psma.com/peas/utils.json#/$defs/distributorInfo"
             }
         }
     },
@@ -58,7 +58,7 @@
                     "$ref": "./utils.json#/$defs/business"
                 },
                 "viCurve": {
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/curve",
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/curve",
                     "description": "Voltage vs current characteristic in the conduction region."
                 }
             },
@@ -114,7 +114,7 @@
             "properties": {
                 "varistorVoltage": {
                     "description": "Varistor voltage V_1mA at the 1 mA reference current, in V.",
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
                 },
                 "maxContinuousAcVoltage": {
                     "description": "Maximum continuous AC working voltage (V_RMS), in V.",

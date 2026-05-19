@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "http://openconverters.com/schemas/RAS/outputs.json",
+    "$id": "https://psma.com/ras/outputs.json",
     "$comment": "SPDX-License-Identifier: Apache-2.0",
     "title": "outputs",
     "description": "Outputs computed for one operating point of a resistor. Each named block is independently optional; every block carries the PEAS outputBase {origin, methodUsed} provenance shell. The top-level RAS document holds an array of these — outputs[i] aligns positionally with inputs.operatingPoints[i].",
@@ -41,7 +41,7 @@
             "title": "powerDissipationOutput",
             "allOf": [
                 {
-                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
+                    "$ref": "https://psma.com/peas/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
@@ -77,7 +77,7 @@
             "title": "temperatureOutput",
             "allOf": [
                 {
-                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
+                    "$ref": "https://psma.com/peas/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
@@ -109,14 +109,14 @@
             "title": "effectiveResistanceOutput",
             "allOf": [
                 {
-                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
+                    "$ref": "https://psma.com/peas/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
                     "properties": {
                         "effectiveResistance": {
                             "description": "Resistance value at the operating temperature (R_nom * (1 + TCR * dT)), in Ohm.",
-                            "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
                         },
                         "ratedResistance": {
                             "description": "Nominal resistance from the datasheet, in Ohm.",
@@ -128,7 +128,7 @@
                             "type": "number"
                         },
                         "conditions": {
-                            "$ref": "http://openconverters.com/schemas/PEAS/outputs/measurementCondition.json"
+                            "$ref": "https://psma.com/peas/outputs/measurementCondition.json"
                         }
                     },
                     "required": [
@@ -142,7 +142,7 @@
             "description": "Pulse-handling check. Headline is `passes` (boolean); the energy values and margin let the caller see how close to the limit the operating point runs.",
             "allOf": [
                 {
-                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
+                    "$ref": "https://psma.com/peas/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
@@ -181,14 +181,14 @@
             "title": "lifetimeOutput",
             "allOf": [
                 {
-                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
+                    "$ref": "https://psma.com/peas/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
                     "properties": {
                         "predictedHours": {
                             "description": "Predicted load life under this operating point, in hours.",
-                            "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
                         },
                         "predictedYears": {
                             "type": "number",
@@ -206,7 +206,7 @@
                             ]
                         },
                         "conditions": {
-                            "$ref": "http://openconverters.com/schemas/PEAS/outputs/measurementCondition.json"
+                            "$ref": "https://psma.com/peas/outputs/measurementCondition.json"
                         }
                     },
                     "required": [
@@ -219,7 +219,7 @@
             "title": "noiseOutput",
             "allOf": [
                 {
-                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
+                    "$ref": "https://psma.com/peas/outputs/outputBase.json"
                 },
                 {
                     "type": "object",
@@ -239,7 +239,7 @@
                             "exclusiveMinimum": 0
                         },
                         "conditions": {
-                            "$ref": "http://openconverters.com/schemas/PEAS/outputs/measurementCondition.json"
+                            "$ref": "https://psma.com/peas/outputs/measurementCondition.json"
                         }
                     }
                 }
@@ -249,7 +249,7 @@
             "title": "driftOutput",
             "allOf": [
                 {
-                    "$ref": "http://openconverters.com/schemas/PEAS/outputs/outputBase.json"
+                    "$ref": "https://psma.com/peas/outputs/outputBase.json"
                 },
                 {
                     "type": "object",

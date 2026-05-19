@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "http://openconverters.com/schemas/RAS/utils.json",
+    "$id": "https://psma.com/ras/utils.json",
     "title": "RAS utils",
     "description": "Shared sub-schemas reused by every RAS per-type document (resistor, varistor). The `part` block is intentionally per-type because the technology enum differs (resistor vs MOV) — only thermal, mechanical and business are reused.",
     "$defs": {
@@ -11,7 +11,7 @@
             "properties": {
                 "operatingTemperature": {
                     "description": "Operating temperature range, in Celsius.",
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
                 },
                 "thermalResistance": {
                     "description": "Thermal resistance from body to ambient, in K/W.",
@@ -27,7 +27,7 @@
             "properties": {
                 "assemblyType": {
                     "description": "PCB mounting / assembly type.",
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/connectionType"
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/connectionType"
                 },
                 "case": {
                     "type": "string",
@@ -39,19 +39,19 @@
                 },
                 "length": {
                     "description": "Body length in metres.",
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
                 },
                 "width": {
                     "description": "Body width in metres.",
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
                 },
                 "height": {
                     "description": "Body height in metres.",
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
                 },
                 "diameter": {
                     "description": "Body diameter in metres (for cylindrical or disc-shaped parts).",
-                    "$ref": "http://openconverters.com/schemas/PEAS/utils.json#/$defs/dimensionWithTolerance"
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
                 },
                 "weight": {
                     "type": "number",
