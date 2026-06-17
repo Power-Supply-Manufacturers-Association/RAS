@@ -2,109 +2,52 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://psma.com/ras/utils.json",
     "title": "RAS utils",
-    "description": "Shared sub-schemas reused by every RAS per-type document (resistor, varistor). The `part` block is intentionally per-type because the technology enum differs (resistor vs MOV) — only thermal, mechanical and business are reused.",
+    "description": "Shared sub-schemas reused by every RAS per-type document (resistor, varistor). The `part` block is per-type (technology enums differ) — thermal, mechanical and deratingCurve are shared here.",
     "$defs": {
         "thermal": {
-            "description": "Thermal characteristics — shared across all RAS device types.",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "operatingTemperature": {
-                    "description": "Operating temperature range, in Celsius.",
-                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
+            "description": "Thermal characteristics — extends PEAS datasheetInfoThermal with body-to-ambient thermal resistance.",
+            "allOf": [
+                {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/datasheetInfoThermal"
                 },
-                "thermalResistance": {
-                    "description": "Thermal resistance from body to ambient, in K/W.",
-                    "type": "number",
-                    "minimum": 0
+                {
+                    "type": "object",
+                    "properties": {
+                        "operatingTemperature": {},
+                        "thermalResistance": {
+                            "description": "Thermal resistance from body to ambient, in K/W.",
+                            "type": "number",
+                            "minimum": 0
+                        }
+                    },
+                    "additionalProperties": false
                 }
-            }
+            ]
         },
         "mechanical": {
-            "description": "Mechanical specs — shared across all RAS device types.",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "assemblyType": {
-                    "description": "PCB mounting / assembly type.",
-                    "$ref": "https://psma.com/peas/utils.json#/$defs/connectionType"
+            "description": "Mechanical specs — extends PEAS datasheetInfoMechanical with a package case field.",
+            "allOf": [
+                {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/datasheetInfoMechanical"
                 },
-                "case": {
-                    "type": "string",
-                    "description": "Package code (e.g. 0603, 2512, axial)."
-                },
-                "shapeType": {
-                    "type": "string",
-                    "description": "Free-form package shape descriptor (e.g. 'SMD chip', 'axial', 'disc')."
-                },
-                "length": {
-                    "description": "Body length in metres.",
-                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
-                },
-                "width": {
-                    "description": "Body width in metres.",
-                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
-                },
-                "height": {
-                    "description": "Body height in metres.",
-                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
-                },
-                "diameter": {
-                    "description": "Body diameter in metres (for cylindrical or disc-shaped parts).",
-                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
-                },
-                "weight": {
-                    "type": "number",
-                    "description": "kg"
+                {
+                    "type": "object",
+                    "properties": {
+                        "length": {},
+                        "width": {},
+                        "height": {},
+                        "diameter": {},
+                        "weight": {},
+                        "shapeType": {},
+                        "assemblyType": {},
+                        "case": {
+                            "type": "string",
+                            "description": "Package code (e.g. 0603, 2512, axial)."
+                        }
+                    },
+                    "additionalProperties": false
                 }
-            }
-        },
-        "business": {
-            "description": "Commercial info — shared across all RAS device types.",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "packaging": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "vpe": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "description": "Units per package"
-                },
-                "moq": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "description": "Minimum order quantity"
-                },
-                "leadTime": {
-                    "type": [
-                        "number",
-                        "null"
-                    ],
-                    "description": "weeks"
-                },
-                "stock": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ]
-                },
-                "cost": {
-                    "type": [
-                        "number",
-                        "null"
-                    ],
-                    "description": "unit cost"
-                }
-            }
+            ]
         },
         "deratingCurve": {
             "description": "Power / current / voltage derating curve as paired arrays. Index-aligned: amplitude[i] is the rated fraction at temperature[i].",

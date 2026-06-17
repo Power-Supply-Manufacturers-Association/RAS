@@ -199,5 +199,6 @@
             ]
         }
     ],
-    "$defs": {}
+    "$defs": {},
+    "unevaluatedProperties": false
 }

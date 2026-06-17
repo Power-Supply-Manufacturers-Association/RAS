@@ -14,7 +14,7 @@ The root document wraps a resistor with its design context.
 | `resistor` | [resistor](#resistorjson) | Yes | The resistor component data |
 | `outputs` | object or array | Yes | Computed results (power dissipation, temperature rise, etc.) |
 
-**Schema ID**: `http://openconverters.com/schemas/RAS/RAS.json`
+**Schema ID**: `https://psma.com/ras/RAS.json`
 
 ---
 

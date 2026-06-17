@@ -1,89 +1,121 @@
 {
-    "inputs": {
-        "operatingPoints": [
-            {
-                "name": "nominal",
-                "conditions": {
-                    "ambientTemperature": 25
-                },
-                "excitation": {
-                    "frequency": 100000,
-                    "voltage": {
-                        "processed": {
-                            "label": "rectangular",
-                            "peak": 0.2,
-                            "offset": 0.1
-                        }
-                    },
-                    "current": {
-                        "processed": {
-                            "label": "rectangular",
-                            "peak": 20,
-                            "offset": 10
-                        }
-                    }
-                }
+  "inputs": {
+    "operatingPoints": [
+      {
+        "name": "nominal",
+        "conditions": {
+          "ambientTemperature": 25
+        },
+        "excitation": {
+          "frequency": 100000,
+          "voltage": {
+            "processed": {
+              "label": "rectangular",
+              "peak": 0.2,
+              "offset": 0.1
             }
-        ],
-        "designRequirements": {
-            "name": "current sense shunt",
-            "deviceType": "resistor",
-            "resistance": { "nominal": 0.01 },
-            "powerRating": 1.0,
-            "allowedTechnologies": ["currentSenseShunt", "metalFoil", "wirewound"]
-        }
-    },
-    "resistor": {
-        "manufacturerInfo": {
-            "name": "Vishay",
-            "reference": "WSK2512R0100FEA",
-            "datasheetInfo": {
-                "part": {
-                    "partNumber": "WSK2512R0100FEA",
-                    "series": "WSK2512",
-                    "technology": "currentSenseShunt",
-                    "case": "2512",
-                    "matchcodeDescription": "10mOhm 1% 1W 2512 Current Sense Shunt"
-                },
-                "electrical": {
-                    "resistance": { "nominal": 0.01 },
-                    "tolerance": 0.01,
-                    "temperatureCoefficient": 75,
-                    "powerRating": 1.0,
-                    "powerRatingTemperature": 70,
-                    "maxVoltage": 50
-                },
-                "thermal": {
-                    "operatingTemperature": { "minimum": -55, "maximum": 170 }
-                },
-                "mechanical": {
-                    "assemblyType": "smt",
-                    "case": "2512",
-                    "shapeType": "SMD chip",
-                    "length": { "nominal": 0.0064 },
-                    "width": { "nominal": 0.0032 },
-                    "height": { "nominal": 0.0006 }
-                },
-                "business": {
-                    "packaging": "Tape & Reel",
-                    "vpe": 4000,
-                    "moq": 4000,
-                    "cost": 0.12
-                },
-                "modelParams": {
-                    "r": 0.01,
-                    "tcr1": 75e-6
-                },
-                "factors": {
-                    "powerDerating": {
-                        "temperature": [70, 100, 130, 155, 170],
-                        "amplitude": [1.0, 0.7, 0.4, 0.15, 0.0]
-                    }
-                }
+          },
+          "current": {
+            "processed": {
+              "label": "rectangular",
+              "peak": 20,
+              "offset": 10
             }
+          }
         }
+      }
+    ],
+    "designRequirements": {
+      "name": "current sense shunt",
+      "deviceType": "resistor",
+      "resistance": {
+        "nominal": 0.01
+      },
+      "powerRating": 1.0,
+      "allowedTechnologies": [
+        "currentSenseShunt",
+        "metalFoil",
+        "wirewound"
+      ]
+    }
+  },
+  "resistor": {
+    "manufacturerInfo": {
+      "name": "Vishay",
+      "reference": "WSK2512R0100FEA",
+      "datasheetInfo": {
+        "part": {
+          "partNumber": "WSK2512R0100FEA",
+          "series": "WSK2512",
+          "technology": "currentSenseShunt",
+          "case": "2512",
+          "matchcodeDescription": "10mOhm 1% 1W 2512 Current Sense Shunt"
+        },
+        "electrical": {
+          "resistance": {
+            "nominal": 0.01
+          },
+          "tolerance": 0.01,
+          "temperatureCoefficient": 75,
+          "powerRating": 1.0,
+          "powerRatingTemperature": 70,
+          "maxVoltage": 50
+        },
+        "thermal": {
+          "operatingTemperature": {
+            "minimum": -55,
+            "maximum": 170
+          }
+        },
+        "mechanical": {
+          "assemblyType": "smt",
+          "case": "2512",
+          "shapeType": "SMD chip",
+          "length": {
+            "nominal": 0.0064
+          },
+          "width": {
+            "nominal": 0.0032
+          },
+          "height": {
+            "nominal": 0.0006
+          }
+        },
+        "modelParams": {
+          "r": 0.01,
+          "tcr1": 7.5e-05
+        },
+        "factors": {
+          "powerDerating": {
+            "temperature": [
+              70,
+              100,
+              130,
+              155,
+              170
+            ],
+            "amplitude": [
+              1.0,
+              0.7,
+              0.4,
+              0.15,
+              0.0
+            ]
+          }
+        }
+      }
     },
-    "outputs": [
-        {}
+    "distributorsInfo": [
+      {
+        "name": "unknown",
+        "packaging": "Tape & Reel",
+        "vpe": 4000,
+        "moq": 4000,
+        "cost": 0.12
+      }
     ]
+  },
+  "outputs": [
+    {}
+  ]
 }

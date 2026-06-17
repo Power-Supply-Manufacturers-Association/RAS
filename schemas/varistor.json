@@ -7,22 +7,37 @@
     "additionalProperties": false,
     "properties": {
         "manufacturerInfo": {
-            "description": "Manufacturer-specific information — extends PEAS manufacturerInfo with varistor-specific datasheetInfo.",
-            "allOf": [
-                {
-                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo"
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/name"
                 },
-                {
-                    "type": "object",
-                    "properties": {
-                        "datasheetInfo": {
-                            "$ref": "#/$defs/datasheetInfo"
-                        }
-                    },
-                    "required": [
-                        "datasheetInfo"
-                    ]
+                "reference": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/reference"
+                },
+                "status": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/status"
+                },
+                "description": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/description"
+                },
+                "orderCode": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/orderCode"
+                },
+                "datasheetUrl": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/datasheetUrl"
+                },
+                "spiceModel": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/spiceModel"
+                },
+                "datasheetInfo": {
+                    "$ref": "#/$defs/datasheetInfo"
                 }
+            },
+            "required": [
+                "name",
+                "datasheetInfo"
             ]
         },
         "distributorsInfo": {
@@ -54,9 +69,6 @@
                 "mechanical": {
                     "$ref": "./utils.json#/$defs/mechanical"
                 },
-                "business": {
-                    "$ref": "./utils.json#/$defs/business"
-                },
                 "viCurve": {
                     "$ref": "https://psma.com/peas/utils.json#/$defs/curve",
                     "description": "Voltage vs current characteristic in the conduction region."
@@ -69,42 +81,35 @@
         },
         "part": {
             "description": "Basic varistor part identification.",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "partNumber": {
-                    "type": "string"
+            "allOf": [
+                {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/datasheetInfoPartBase"
                 },
-                "series": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "technology": {
-                    "type": "string",
-                    "enum": [
-                        "metalOxide",
-                        "siliconCarbide",
-                        "multiLayer",
-                        "polymer"
-                    ]
-                },
-                "case": {
-                    "type": "string",
-                    "description": "Package code (e.g. disc diameter '14D', '0805', etc.)."
-                },
-                "matchcodeDescription": {
-                    "type": [
-                        "string",
-                        "null"
+                {
+                    "type": "object",
+                    "properties": {
+                        "partNumber": {},
+                        "series": {},
+                        "case": {},
+                        "description": {},
+                        "technology": {
+                            "type": "string",
+                            "enum": [
+                                "metalOxide",
+                                "siliconCarbide",
+                                "multiLayer",
+                                "polymer"
+                            ]
+                        },
+                        "matchcodeDescription": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "technology"
                     ]
                 }
-            },
-            "required": [
-                "partNumber",
-                "technology",
-                "case"
             ]
         },
         "electrical": {

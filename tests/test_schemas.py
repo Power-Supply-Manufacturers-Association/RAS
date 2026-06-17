@@ -69,7 +69,7 @@ def registry(schemas):
 @pytest.fixture(scope="session")
 def ras_validator(schemas, registry):
     return Draft202012Validator(
-        schemas["http://openconverters.com/schemas/RAS/RAS.json"],
+        schemas["https://psma.com/ras/RAS.json"],
         registry=registry,
     )
 
