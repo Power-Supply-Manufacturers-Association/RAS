@@ -92,7 +92,10 @@
       {
         "name": "Digi-Key",
         "reference": "495-2424-ND",
-        "cost": 0.22,
+        "cost": {
+          "value": 0.22,
+          "currency": "USD"
+        },
         "stock": 18000,
         "packaging": "Bulk",
         "vpe": 1000,

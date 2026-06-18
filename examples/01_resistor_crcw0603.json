@@ -110,7 +110,10 @@
         "packaging": "Tape & Reel",
         "vpe": 5000,
         "moq": 5000,
-        "cost": 0.003
+        "cost": {
+          "value": 0.003,
+          "currency": "USD"
+        }
       }
     ]
   },
