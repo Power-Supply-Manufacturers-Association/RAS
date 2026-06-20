@@ -154,7 +154,7 @@
                     "type": "string"
                 },
                 "energyAbsorption": {
-                    "description": "Maximum single-pulse energy absorption capability for a 10/1000 µs waveform, in J.",
+                    "description": "Maximum single-pulse energy absorption capability for a 10/1000 µs waveform, in J. Optional: this is a power-/disc-MOV rating used to size devices against AC-line surge energy. Multilayer chip varistors for circuit/ESD protection (e.g. TDK AVR series) are specified instead by peakSurgeCurrent at an 8/20 µs waveform and clampingVoltage, and typically publish no Joule rating — for those parts this field is absent.",
                     "type": "number",
                     "minimum": 0
                 },
@@ -177,8 +177,7 @@
             "required": [
                 "varistorVoltage",
                 "clampingVoltage",
-                "peakSurgeCurrent",
-                "energyAbsorption"
+                "peakSurgeCurrent"
             ]
         }
     }
