@@ -13,7 +13,7 @@
 
 ## What is RAS?
 
-**RAS is a standardized way to describe resistor components** used in power electronics and general electronics design. It captures everything about a resistor -- identification, electrical characteristics, thermal behavior, mechanical dimensions, simulation parameters, and derating curves -- in a single machine-readable JSON document.
+**RAS is a standardized way to describe resistor components** (and varistors) used in power electronics and general electronics design. It captures everything about a resistor -- identification, electrical characteristics, thermal behavior, mechanical dimensions, simulation parameters, and derating curves -- in a single machine-readable JSON document. A RAS document holds exactly one of a `resistor` or a `varistor` (the field name selects the device type).
 
 RAS is part of the [OpenConverters](https://github.com/OpenConverters) ecosystem and follows the same structural pattern established by [MAS (Magnetic Agnostic Structure)](https://github.com/OpenMagnetics/MAS). A valid RAS document, when wrapped with `inputs` and `outputs`, is also a valid [PEAS (Power Electronics Agnostic Structure)](../PEAS/) document.
 
@@ -110,8 +110,12 @@ Every RAS document has three sections:
 
 ### Schema Hierarchy
 
+RAS.json carries `inputs`, `outputs`, and **exactly one** of `{resistor,
+varistor}` (a top-level `oneOf` — the field name is the device discriminator).
+
 ```
-RAS.json                          # Top-level: inputs + resistor + outputs
+RAS.json                          # Top-level: inputs + (resistor | varistor) + outputs
+  +-- inputs.json                 # Operating points (+ inputs/designRequirements.json)
   +-- resistor.json               # Resistor component data
   |     +-- manufacturerInfo
   |           +-- datasheetInfo
@@ -122,6 +126,8 @@ RAS.json                          # Top-level: inputs + resistor + outputs
   |                 +-- business      # Pricing, packaging
   |                 +-- modelParams   # SPICE parameters
   |                 +-- factors       # Derating curves
+  +-- varistor.json               # Varistor (MOV) component data — same outer shape
+  +-- outputs.json                # Computed results (power dissipation, temp rise, …)
   +-- utils.json                  # Shared types
         +-- dimensionWithTolerance
         +-- curve
@@ -296,8 +302,13 @@ All values use SI base units:
 ```
 RAS/
 +-- schemas/
-|     +-- RAS.json          # Top-level schema
+|     +-- RAS.json          # Top-level: inputs + (resistor | varistor) + outputs
+|     +-- inputs.json       # Operating points
+|     +-- inputs/
+|     |     +-- designRequirements.json
 |     +-- resistor.json     # Resistor component schema
+|     +-- varistor.json     # Varistor (MOV) component schema
+|     +-- outputs.json      # Computed results schema
 |     +-- utils.json        # Shared types (dimensionWithTolerance, curve, numberArray)
 +-- data/
 |     +-- resistors.ndjson  # Manufacturing building blocks (series definitions)
