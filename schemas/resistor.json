@@ -7,6 +7,7 @@
     "additionalProperties": false,
     "properties": {
         "manufacturerInfo": {
+            "title": "resistorManufacturerInfo",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -56,6 +57,7 @@
     ],
     "$defs": {
         "datasheetInfo": {
+            "title": "resistorDatasheetInfo",
             "description": "All information extracted from the resistor datasheet.",
             "type": "object",
             "additionalProperties": false,
@@ -85,6 +87,7 @@
             ]
         },
         "part": {
+            "title": "resistorPart",
             "description": "Basic resistor part identification.",
             "allOf": [
                 {
@@ -125,6 +128,7 @@
             ]
         },
         "electrical": {
+            "title": "resistorElectrical",
             "description": "Resistor electrical characteristics.",
             "type": "object",
             "additionalProperties": false,
@@ -178,6 +182,7 @@
             ]
         },
         "modelParams": {
+            "title": "resistorModelParams",
             "description": "SPICE model parameters for resistor.",
             "type": "object",
             "additionalProperties": false,
@@ -198,6 +203,7 @@
             }
         },
         "factors": {
+            "title": "resistorFactors",
             "description": "Derating factors as functions of temperature.",
             "type": "object",
             "additionalProperties": false,

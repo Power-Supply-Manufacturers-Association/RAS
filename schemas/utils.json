@@ -5,6 +5,7 @@
     "description": "Shared sub-schemas reused by every RAS per-type document (resistor, varistor). The `part` block is per-type (technology enums differ) — thermal, mechanical and deratingCurve are shared here.",
     "$defs": {
         "thermal": {
+            "title": "rasThermal",
             "description": "Thermal characteristics — extends PEAS datasheetInfoThermal with body-to-ambient thermal resistance.",
             "allOf": [
                 {
@@ -25,6 +26,7 @@
             ]
         },
         "mechanical": {
+            "title": "rasMechanical",
             "description": "Mechanical specs — extends PEAS datasheetInfoMechanical with a package case field.",
             "allOf": [
                 {
@@ -50,6 +52,7 @@
             ]
         },
         "deratingCurve": {
+            "title": "deratingCurve",
             "description": "Power / current / voltage derating curve as paired arrays. Index-aligned: amplitude[i] is the rated fraction at temperature[i].",
             "type": "object",
             "additionalProperties": false,

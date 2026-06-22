@@ -7,6 +7,7 @@
     "additionalProperties": false,
     "properties": {
         "manufacturerInfo": {
+            "title": "varistorManufacturerInfo",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -56,6 +57,7 @@
     ],
     "$defs": {
         "datasheetInfo": {
+            "title": "varistorDatasheetInfo",
             "description": "All information extracted from the varistor datasheet.",
             "type": "object",
             "additionalProperties": false,
@@ -83,6 +85,7 @@
             ]
         },
         "part": {
+            "title": "varistorPart",
             "description": "Basic varistor part identification.",
             "allOf": [
                 {
@@ -116,6 +119,7 @@
             ]
         },
         "electrical": {
+            "title": "varistorElectrical",
             "description": "Varistor electrical characteristics — every field is relevant to varistors / MOVs.",
             "type": "object",
             "additionalProperties": false,
