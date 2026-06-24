@@ -79,6 +79,10 @@
                 },
                 "factors": {
                     "$ref": "#/$defs/factors"
+                },
+                "provenance": {
+                    "description": "Data-provenance trail (see provenance).",
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/provenance"
                 }
             },
             "required": [

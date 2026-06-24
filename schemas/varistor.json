@@ -77,6 +77,10 @@
                 "viCurve": {
                     "$ref": "https://psma.com/peas/utils.json#/$defs/curve",
                     "description": "Voltage vs current characteristic in the conduction region."
+                },
+                "provenance": {
+                    "description": "Data-provenance trail (see provenance).",
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/provenance"
                 }
             },
             "required": [
