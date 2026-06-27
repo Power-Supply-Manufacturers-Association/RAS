@@ -52,8 +52,17 @@
             }
         }
     },
-    "required": [
-        "manufacturerInfo"
+    "anyOf": [
+        {
+            "description": "A sourced part: carries its manufacturer + datasheet.",
+            "required": [
+                "manufacturerInfo"
+            ]
+        },
+        {
+            "description": "A pre-sourcing seed: an empty resistor object whose requirements live in the enclosing PEAS document's inputs.designRequirements (mirrors CAS/SAS seed-friendliness).",
+            "maxProperties": 0
+        }
     ],
     "$defs": {
         "datasheetInfo": {
