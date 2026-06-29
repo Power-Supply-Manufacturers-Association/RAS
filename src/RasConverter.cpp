@@ -30,7 +30,13 @@ double resolve_resistance(const json& peas, const PEAS::Fidelity& fidelity) {
     if (!peas.contains("resistor"))
         throw std::runtime_error("RAS real: 'resistor' component missing from PEAS document");
     auto resistor = peas.at("resistor").get<Resistor>();
-    const auto& datasheet = resistor.get_manufacturer_info().get_datasheet_info();
+    // manufacturerInfo is optional since the seed-friendly schema change (a pre-sourcing seed
+    // carries no datasheet); a real/DATASHEET resistance cannot be resolved without it.
+    const auto mfr = resistor.get_manufacturer_info();
+    if (!mfr)
+        throw std::runtime_error("RAS real: 'resistor.manufacturerInfo' missing — a pre-sourcing "
+                                 "seed has no datasheet; source the part or use REQUIREMENTS fidelity");
+    const auto& datasheet = mfr->get_datasheet_info();
 
     if (fidelity.allowStoredModelParams) {
         if (auto mp = datasheet.get_model_params()) {
