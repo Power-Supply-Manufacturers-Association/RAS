@@ -13,7 +13,7 @@
 
 ## What is RAS?
 
-**RAS is a standardized way to describe resistor components** (and varistors) used in power electronics and general electronics design. It captures everything about a resistor -- identification, electrical characteristics, thermal behavior, mechanical dimensions, simulation parameters, and derating curves -- in a single machine-readable JSON document. A RAS document holds exactly one of a `resistor` or a `varistor` (the field name selects the device type).
+**RAS is a standardized way to describe resistor components** (and varistors and thermistors) used in power electronics and general electronics design. It captures everything about a resistor -- identification, electrical characteristics, thermal behavior, mechanical dimensions, simulation parameters, and derating curves -- in a single machine-readable JSON document. A RAS document holds exactly one of a `resistor`, a `varistor` or a `thermistor` (the field name selects the device type).
 
 RAS is part of the [OpenConverters](https://github.com/OpenConverters) ecosystem and follows the same structural pattern established by [MAS (Magnetic Agnostic Structure)](https://github.com/OpenMagnetics/MAS). A valid RAS document, when wrapped with `inputs` and `outputs`, is also a valid [PEAS (Power Electronics Agnostic Structure)](../PEAS/) document.
 
@@ -57,6 +57,8 @@ The resistor `technology` field is a closed 11-value enum (`schemas/resistor.jso
 | **melf** | Precision/pulse SMD (cylindrical) | Metal-film performance in SMD form, good pulse handling |
 
 Varistors have their own 4-value technology enum (`schemas/varistor.json`): `metalOxide` (disc MOVs), `siliconCarbide`, `multiLayer` (chip MLVs), `polymer`.
+
+Thermistors have a 2-value technology enum (`schemas/thermistor.json#/$defs/technology`): `ntc` (temperature sensing/compensation, inrush current limiting), `ptc` (ceramic switching PTC — overtemperature sensing, self-regulating heating). **Scope note**: resettable polymer PTC fuses (PPTC / "polyfuse") are protection parts, NOT thermistors, and are out of RAS scope.
 
 ### Technology Selection Flowchart
 
@@ -115,18 +117,18 @@ Every RAS document has three sections:
 +----------------+     +----------------+     +----------------+
 ```
 
-`inputs` is fully structured: `operatingPoints[]` (PEAS `twoTerminalOperatingPoint`) plus `designRequirements` with a `deviceType` discriminator (`resistor` requires `resistance`; `varistor` requires `ratedContinuousVoltage` plus at least one of `minimumEnergyAbsorption` / `minimumPeakSurgeCurrent`). `outputs` is an **array** of per-operating-point result bundles (7 sealed blocks: `powerDissipation`, `temperature`, `effectiveResistance`, `pulseStress`, `lifetime`, `noise`, `drift`), each carrying `{origin, methodUsed}` provenance.
+`inputs` is fully structured: `operatingPoints[]` (PEAS `twoTerminalOperatingPoint`) plus `designRequirements` with a `deviceType` discriminator (`resistor` requires `resistance`; `varistor` requires `ratedContinuousVoltage` plus at least one of `minimumEnergyAbsorption` / `minimumPeakSurgeCurrent`; `thermistor` requires `resistanceAt25C`). `outputs` is an **array** of per-operating-point result bundles (7 sealed blocks: `powerDissipation`, `temperature`, `effectiveResistance`, `pulseStress`, `lifetime`, `noise`, `drift`), each carrying `{origin, methodUsed}` provenance.
 
 ### Schema Hierarchy
 
 RAS.json carries `inputs`, `outputs`, and **exactly one** of `{resistor,
-varistor}` (a top-level `oneOf` — the field name is the device discriminator).
-Both component objects also allow an **empty seed** (`{}`) for pre-sourcing slots.
+varistor, thermistor}` (a top-level `oneOf` — the field name is the device discriminator).
+All component objects also allow an **empty seed** (`{}`) for pre-sourcing slots.
 
 ```
-RAS.json                          # Top-level: inputs + (resistor | varistor) + outputs[]
+RAS.json                          # Top-level: inputs + (resistor | varistor | thermistor) + outputs[]
   +-- inputs.json                 # Operating points + design requirements
-  |     +-- inputs/designRequirements.json   # deviceType-discriminated (resistor | varistor)
+  |     +-- inputs/designRequirements.json   # deviceType-discriminated (resistor | varistor | thermistor)
   +-- resistor.json               # Resistor component data
   |     +-- manufacturerInfo (name + datasheetInfo required)
   |     |     +-- datasheetInfo
@@ -140,6 +142,9 @@ RAS.json                          # Top-level: inputs + (resistor | varistor) + 
   +-- varistor.json               # Varistor (MOV) component data — same outer shape
   |                               #   (+ viCurve; electrical requires varistorVoltage,
   |                               #    clampingVoltage, peakSurgeCurrent)
+  +-- thermistor.json             # Thermistor (NTC / PTC) component data — same outer shape
+  |                               #   (electrical requires resistanceAt25C; B constant,
+  |                               #    inrush ratings, dissipation/time constants optional)
   +-- outputs.json                # Computed results (7 sealed per-operating-point blocks)
   +-- utils.json                  # RAS shared types
         +-- thermal
@@ -153,7 +158,7 @@ Generic primitives (`dimensionWithTolerance`, `curve`, `numberArray`, `distribut
 
 ## Examples
 
-All three examples live in `examples/` and validate against `schemas/RAS.json`. The snippets below are trimmed for readability but schema-true.
+All four examples live in `examples/` and validate against `schemas/RAS.json`. The snippets below are trimmed for readability but schema-true.
 
 ### Example 1: Standard Thick Film Resistor (`examples/01_resistor_crcw0603.json`)
 
@@ -410,6 +415,51 @@ Key points:
 - The varistor design-requirements branch requires `ratedContinuousVoltage` plus at least one of `minimumEnergyAbsorption` / `minimumPeakSurgeCurrent`
 - Commercial data (cost, stock, MOQ) lives in `distributorsInfo`, not inside `datasheetInfo`
 
+### Example 4: NTC Inrush Current Limiter (`examples/04_thermistor_sl22.json`)
+
+An Ametherm SL22 10005 (10 Ohm / 5 A / 22 mm disc) NTC thermistor limiting the bulk-capacitor inrush of a 230 Vac SMPS. Note the `thermistor` top-level field and the `deviceType: "thermistor"` requirements branch:
+
+```json
+{
+    "inputs": {
+        "designRequirements": {
+            "name": "230 Vac SMPS bulk-capacitor inrush limiter",
+            "deviceType": "thermistor",
+            "resistanceAt25C": {"nominal": 10},
+            "minimumSteadyStateCurrent": 5,
+            "minimumEnergy": 40,
+            "role": "inrushLimiting",
+            "allowedTechnologies": ["ntc"]
+        }
+    },
+    "thermistor": {
+        "manufacturerInfo": {
+            "name": "Ametherm",
+            "reference": "SL22 10005",
+            "datasheetInfo": {
+                "part": {"partNumber": "SL22 10005", "series": "SL", "technology": "ntc", "case": "SL22"},
+                "electrical": {
+                    "resistanceAt25C": {"nominal": 10},
+                    "resistanceTolerance": 0.2,
+                    "bConstant": 2700,
+                    "bConstantTemperatures": [25, 85],
+                    "maximumSteadyStateCurrent": 5,
+                    "maximumEnergy": 50,
+                    "dissipationConstant": 0.0248,
+                    "thermalTimeConstant": 95
+                }
+            }
+        }
+    },
+    "outputs": [{}]
+}
+```
+
+Key points:
+- Only **resistanceAt25C** is required in the thermistor electrical block -- inrush limiters lead with `maximumSteadyStateCurrent` / `maximumEnergy`, sensing NTCs with `bConstant` (+ its `bConstantTemperatures` pair, e.g. B25/85), PTCs with `switchTemperature`
+- The thermistor design-requirements branch requires `resistanceAt25C`; its `allowedTechnologies` items `$ref` the part-side `thermistor.json#/$defs/technology` anchor (`ntc` / `ptc`)
+- Resettable polymer PTC fuses (PPTC) are protection parts, not thermistors -- out of RAS scope
+
 ---
 
 ## Relationship to Other Schemas
@@ -419,7 +469,7 @@ PEAS (Power Electronics Agnostic Structure) -- abstract base
  +-- MAS (Magnetic)    -- inductors, transformers, chokes
  +-- SAS (Semiconductor) -- MOSFETs, diodes, IGBTs
  +-- CAS (Capacitor)   -- ceramic, electrolytic, film caps
- +-- RAS (Resistor)    -- this schema (resistors + varistors)
+ +-- RAS (Resistor)    -- this schema (resistors + varistors + thermistors)
  |
  +-> TAS (Topology Agnostic Structure) -- complete converter designs
        references PEAS components (inline or by path)
@@ -454,12 +504,13 @@ All values use SI base units:
 ```
 RAS/
 +-- schemas/
-|     +-- RAS.json          # Top-level: inputs + (resistor | varistor) + outputs[]
+|     +-- RAS.json          # Top-level: inputs + (resistor | varistor | thermistor) + outputs[]
 |     +-- inputs.json       # Operating points + design requirements
 |     +-- inputs/
 |     |     +-- designRequirements.json   # deviceType-discriminated requirements
 |     +-- resistor.json     # Resistor component schema
 |     +-- varistor.json     # Varistor (MOV) component schema
+|     +-- thermistor.json   # Thermistor (NTC / PTC) component schema
 |     +-- outputs.json      # Computed results schema (7 sealed blocks)
 |     +-- utils.json        # RAS shared types (thermal, mechanical, deratingCurve)
 +-- data/
@@ -468,6 +519,7 @@ RAS/
 |     +-- 01_resistor_crcw0603.json        # Thick film chip resistor
 |     +-- 02_shunt_resistor_wsk2512.json   # Current sense shunt resistor
 |     +-- 03_varistor_b72214.json          # Metal-oxide disc varistor (MOV)
+|     +-- 04_thermistor_sl22.json          # NTC inrush current limiter
 +-- docs/
       +-- schema.md         # Detailed field-by-field schema reference
 ```

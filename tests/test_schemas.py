@@ -6,9 +6,9 @@ or:         python3 -m pytest tests/test_schemas.py -v
 Covers:
   * every RAS schema parses and passes Draft 2020-12 meta-validation
   * cross-document $refs resolve (RAS + PEAS schemas registered)
-  * the canonical examples (resistor, shunt, varistor) validate
+  * the canonical examples (resistor, shunt, varistor, thermistor) validate
   * negative cases:
-      - top-level oneOf (must have exactly one of resistor/varistor)
+      - top-level oneOf (must have exactly one of resistor/varistor/thermistor)
       - manufacturerInfo / electrical required
       - per-type required electrical fields
       - additionalProperties: false enforced
@@ -37,6 +37,7 @@ RAS_SCHEMA_FILES = [
     "utils.json",
     "resistor.json",
     "varistor.json",
+    "thermistor.json",
     "inputs/designRequirements.json",
 ]
 
@@ -89,6 +90,11 @@ def varistor_doc():
     return _load(EXAMPLES_DIR / "03_varistor_b72214.json")
 
 
+@pytest.fixture
+def thermistor_doc():
+    return _load(EXAMPLES_DIR / "04_thermistor_sl22.json")
+
+
 def assert_valid(validator, doc):
     errs = sorted(validator.iter_errors(doc), key=lambda e: list(e.path))
     assert not errs, "expected valid, got errors:\n" + "\n".join(
@@ -131,6 +137,15 @@ def test_varistor_example_validates(ras_validator, varistor_doc):
     assert_valid(ras_validator, varistor_doc)
 
 
+def test_thermistor_example_validates(ras_validator, thermistor_doc):
+    assert_valid(ras_validator, thermistor_doc)
+
+
+def test_thermistor_empty_seed_validates(ras_validator, thermistor_doc):
+    thermistor_doc["thermistor"] = {}
+    assert_valid(ras_validator, thermistor_doc)
+
+
 # ---------------------------------------------------------------------------
 # Top-level oneOf
 # ---------------------------------------------------------------------------
@@ -146,7 +161,7 @@ def test_two_device_fields_invalid(ras_validator, resistor_doc, varistor_doc):
 
 
 def test_unknown_device_field_rejected(ras_validator, resistor_doc):
-    resistor_doc["thermistor"] = resistor_doc.pop("resistor")
+    resistor_doc["potentiometer"] = resistor_doc.pop("resistor")
     assert_invalid(ras_validator, resistor_doc)
 
 
@@ -220,6 +235,24 @@ def test_varistor_unknown_technology_rejected(ras_validator, varistor_doc):
     assert_invalid(ras_validator, varistor_doc)
 
 
+def test_thermistor_required_electrical_fields(ras_validator, thermistor_doc):
+    for field in ("resistanceAt25C",):
+        bad = copy.deepcopy(thermistor_doc)
+        del bad["thermistor"]["manufacturerInfo"]["datasheetInfo"]["electrical"][field]
+        assert_invalid(ras_validator, bad)
+
+
+def test_thermistor_unknown_technology_rejected(ras_validator, thermistor_doc):
+    thermistor_doc["thermistor"]["manufacturerInfo"]["datasheetInfo"]["part"]["technology"] = "metalOxide"
+    assert_invalid(ras_validator, thermistor_doc)
+
+
+def test_thermistor_b_constant_temperatures_pair_enforced(ras_validator, thermistor_doc):
+    electrical = thermistor_doc["thermistor"]["manufacturerInfo"]["datasheetInfo"]["electrical"]
+    electrical["bConstantTemperatures"] = [25]
+    assert_invalid(ras_validator, thermistor_doc)
+
+
 def test_dimension_with_tolerance_requires_one_field(ras_validator, resistor_doc):
     resistor_doc["resistor"]["manufacturerInfo"]["datasheetInfo"]["electrical"]["resistance"] = {}
     assert_invalid(ras_validator, resistor_doc)
@@ -255,6 +288,16 @@ def test_design_requirements_varistor_requires_voltage(ras_validator, varistor_d
     assert_invalid(ras_validator, varistor_doc)
 
 
+def test_design_requirements_thermistor_requires_resistance(ras_validator, thermistor_doc):
+    del thermistor_doc["inputs"]["designRequirements"]["resistanceAt25C"]
+    assert_invalid(ras_validator, thermistor_doc)
+
+
+def test_design_requirements_thermistor_unknown_technology_rejected(ras_validator, thermistor_doc):
+    thermistor_doc["inputs"]["designRequirements"]["allowedTechnologies"] = ["metalOxide"]
+    assert_invalid(ras_validator, thermistor_doc)
+
+
 def test_design_requirements_unknown_device_type_rejected(ras_validator, resistor_doc):
-    resistor_doc["inputs"]["designRequirements"]["deviceType"] = "thermistor"
+    resistor_doc["inputs"]["designRequirements"]["deviceType"] = "potentiometer"
     assert_invalid(ras_validator, resistor_doc)

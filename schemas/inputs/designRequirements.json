@@ -3,7 +3,7 @@
     "$id": "https://psma.com/ras/inputs/designRequirements.json",
     "$comment": "SPDX-License-Identifier: MIT",
     "title": "designRequirements",
-    "description": "The list of requirements that an RAS component (resistor or varistor) must comply with. Built on top of the PEAS designRequirementsBase mixin, with a deviceType discriminator that drives per-type required ratings — mirrors the SAS pattern.",
+    "description": "The list of requirements that an RAS component (resistor, varistor or thermistor) must comply with. Built on top of the PEAS designRequirementsBase mixin, with a deviceType discriminator that drives per-type required ratings — mirrors the SAS pattern.",
     "allOf": [
         {
             "$ref": "https://psma.com/peas/utils.json#/$defs/designRequirementsBase"
@@ -16,7 +16,8 @@
                     "type": "string",
                     "enum": [
                         "resistor",
-                        "varistor"
+                        "varistor",
+                        "thermistor"
                     ]
                 },
                 "maximumWorkingVoltage": {
@@ -206,6 +207,58 @@
                         }
                     ],
                     "$comment": "At least one energy-class rating is required: minimumEnergyAbsorption (Joule-rated disc varistors) or minimumPeakSurgeCurrent (multilayer/ESD varistors that publish no Joule rating)."
+                },
+                {
+                    "description": "Thermistor-specific requirements",
+                    "properties": {
+                        "deviceType": {
+                            "const": "thermistor"
+                        },
+                        "resistanceAt25C": {
+                            "description": "Required zero-power resistance R25 at 25 °C, in Ohm.",
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
+                        },
+                        "bConstant": {
+                            "description": "Required B (beta) constant, in K (NTC parts).",
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
+                        },
+                        "minimumSteadyStateCurrent": {
+                            "description": "Required minimum continuous (steady-state) current capability, in A (inrush limiters).",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "minimumEnergy": {
+                            "description": "Required minimum single-event energy absorption capability (capacitive load), in J (inrush limiters).",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "switchTemperature": {
+                            "description": "Required PTC switch / reference temperature, in Celsius.",
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
+                        },
+                        "role": {
+                            "description": "Thermistor role in the converter.",
+                            "type": "string",
+                            "enum": [
+                                "inrushLimiting",
+                                "temperatureSensing",
+                                "temperatureCompensation",
+                                "overtemperatureProtection"
+                            ]
+                        },
+                        "allowedTechnologies": {
+                            "description": "Subset of thermistor technologies acceptable for this design. If absent, all technologies are allowed.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "https://psma.com/ras/thermistor.json#/$defs/technology"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                        }
+                    },
+                    "required": [
+                        "resistanceAt25C"
+                    ]
                 }
             ]
         }

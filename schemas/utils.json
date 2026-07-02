@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://psma.com/ras/utils.json",
     "title": "RAS utils",
-    "description": "Shared sub-schemas reused by every RAS per-type document (resistor, varistor). The `part` block is per-type (technology enums differ) — thermal, mechanical and deratingCurve are shared here.",
+    "description": "Shared sub-schemas reused by every RAS per-type document (resistor, varistor, thermistor). The `part` block is per-type (technology enums differ) — thermal, mechanical and deratingCurve are shared here.",
     "$defs": {
         "thermal": {
             "title": "rasThermal",

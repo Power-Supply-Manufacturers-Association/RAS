@@ -1,0 +1,191 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://psma.com/ras/thermistor.json",
+    "title": "thermistor",
+    "description": "Thermistor (NTC / PTC) component data — temperature-dependent resistors used for inrush current limiting, temperature sensing/compensation and overtemperature protection. Scope covers ceramic NTC and PTC THERMISTORS only; resettable polymer PTC fuses (PPTC / 'polyfuse') are protection parts and are out of RAS scope. The presence of the 'thermistor' field at the top level of an RAS document discriminates the device type — there is no deviceType property.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "manufacturerInfo": {
+            "title": "thermistorManufacturerInfo",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/name"
+                },
+                "reference": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/reference"
+                },
+                "status": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/status"
+                },
+                "description": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/description"
+                },
+                "orderCode": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/orderCode"
+                },
+                "datasheetUrl": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/datasheetUrl"
+                },
+                "spiceModel": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/spiceModel"
+                },
+                "family": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/family"
+                },
+                "datasheetInfo": {
+                    "$ref": "#/$defs/datasheetInfo"
+                }
+            },
+            "required": [
+                "name",
+                "datasheetInfo"
+            ]
+        },
+        "distributorsInfo": {
+            "description": "Where to buy this component",
+            "type": "array",
+            "items": {
+                "$ref": "https://psma.com/peas/utils.json#/$defs/distributorInfo"
+            }
+        }
+    },
+    "$defs": {
+        "technology": {
+            "title": "thermistorTechnology",
+            "description": "Thermistor technology. 'ntc' — negative temperature coefficient (temperature sensing/compensation, inrush current limiting). 'ptc' — positive temperature coefficient ceramic thermistor (overtemperature sensing, self-regulating heating); NOT a resettable polymer PTC fuse.",
+            "type": "string",
+            "enum": [
+                "ntc",
+                "ptc"
+            ]
+        },
+        "datasheetInfo": {
+            "title": "thermistorDatasheetInfo",
+            "description": "All information extracted from the thermistor datasheet.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "part": {
+                    "$ref": "#/$defs/part"
+                },
+                "electrical": {
+                    "$ref": "#/$defs/electrical"
+                },
+                "thermal": {
+                    "$ref": "./utils.json#/$defs/thermal"
+                },
+                "mechanical": {
+                    "$ref": "./utils.json#/$defs/mechanical"
+                },
+                "provenance": {
+                    "description": "Data-provenance trail (see provenance).",
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/provenance"
+                }
+            },
+            "required": [
+                "part",
+                "electrical"
+            ]
+        },
+        "part": {
+            "title": "thermistorPart",
+            "description": "Basic thermistor part identification.",
+            "allOf": [
+                {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/datasheetInfoPartBase"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "partNumber": {},
+                        "series": {},
+                        "case": {},
+                        "description": {},
+                        "technology": {
+                            "$ref": "#/$defs/technology"
+                        },
+                        "matchcodeDescription": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "technology"
+                    ]
+                }
+            ]
+        },
+        "electrical": {
+            "title": "thermistorElectrical",
+            "description": "Thermistor electrical characteristics. Field surface matches the live distributor parametric columns (resistance @ 25 °C, B value, steady-state current, energy) plus the physics constants (dissipation constant, thermal time constant) every NTC/PTC datasheet publishes.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "resistanceAt25C": {
+                    "description": "Zero-power resistance R25 at 25 °C, in Ohm.",
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
+                },
+                "resistanceTolerance": {
+                    "description": "Tolerance on resistanceAt25C as a fraction (0.05 = ±5%).",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "bConstant": {
+                    "description": "NTC B (beta) constant between the two reference temperatures given in bConstantTemperatures, in K. NTC parts only — PTC thermistors publish no B constant.",
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "bConstantTemperatures": {
+                    "description": "The two reference temperatures that qualify bConstant, in Celsius, ascending (e.g. B25/85 → [25, 85]; B25/100 → [25, 100]).",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "maximumSteadyStateCurrent": {
+                    "description": "Maximum continuous (steady-state) current, in A — the headline rating of NTC inrush current limiters.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "maximumEnergy": {
+                    "description": "Maximum energy the thermistor can absorb during a single inrush event (capacitive load rating), in J.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "dissipationConstant": {
+                    "description": "Dissipation constant δth (power needed to raise the body 1 K above ambient in still air), in W/K.",
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "thermalTimeConstant": {
+                    "description": "Thermal (cooling) time constant τc — time to cover 63.2% of the temperature step after power removal, in s.",
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "switchTemperature": {
+                    "description": "PTC switch / reference temperature T_ref at which the resistance begins its steep rise, in Celsius. PTC parts only.",
+                    "type": "number"
+                }
+            },
+            "required": [
+                "resistanceAt25C"
+            ]
+        }
+    },
+    "anyOf": [
+        {
+            "required": [
+                "manufacturerInfo"
+            ]
+        },
+        {
+            "$comment": "Empty pre-sourcing seed: an abstract thermistor slot before librarian binding (family-wide seed convention).",
+            "maxProperties": 0
+        }
+    ]
+}

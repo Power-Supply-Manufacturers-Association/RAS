@@ -1,21 +1,22 @@
 # RAS Schema Reference
 
-Complete field-by-field documentation for the Resistor-family Agnostic Structure (fixed resistors **and** varistors).
+Complete field-by-field documentation for the Resistor-family Agnostic Structure (fixed resistors, varistors **and** thermistors).
 
 ---
 
 ## Top-Level: RAS.json
 
-The root document wraps exactly one component with its design context. The field name (`resistor` or `varistor`) is the device-type discriminator — there is no `deviceType` property on the component itself.
+The root document wraps exactly one component with its design context. The field name (`resistor`, `varistor` or `thermistor`) is the device-type discriminator — there is no `deviceType` property on the component itself.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `inputs` | [inputs](#inputs-inputsjson) | Yes | Design requirements and operating points for this component |
-| `resistor` | [resistor](#resistorjson) | Exactly one of the two | Fixed resistor component data |
-| `varistor` | [varistor](#varistorjson) | Exactly one of the two | Varistor / MOV component data |
+| `resistor` | [resistor](#resistorjson) | Exactly one of the three | Fixed resistor component data |
+| `varistor` | [varistor](#varistorjson) | Exactly one of the three | Varistor / MOV component data |
+| `thermistor` | [thermistor](#thermistorjson) | Exactly one of the three | Thermistor (NTC / PTC) component data |
 | `outputs` | array of [outputs](#outputs-outputsjson) | Yes | Computed results per operating point; `outputs[i]` aligns positionally with `inputs.operatingPoints[i]` |
 
-A top-level `oneOf` enforces that exactly one of `resistor` / `varistor` is present. The root object is closed (`additionalProperties: false`).
+A top-level `oneOf` enforces that exactly one of `resistor` / `varistor` / `thermistor` is present. The root object is closed (`additionalProperties: false`).
 
 **Schema ID**: `https://psma.com/ras/RAS.json`
 
@@ -32,13 +33,13 @@ Mirrors the MAS / CAS inputs structure. Both fields required; closed object.
 
 ### designRequirements (inputs/designRequirements.json)
 
-An `allOf` extension of the PEAS `designRequirementsBase` mixin, closed with top-level `unevaluatedProperties: false`. A **`deviceType` discriminator** (required, `"resistor"` or `"varistor"`) drives a per-type `oneOf` — mirrors the SAS pattern.
+An `allOf` extension of the PEAS `designRequirementsBase` mixin, closed with top-level `unevaluatedProperties: false`. A **`deviceType` discriminator** (required, `"resistor"`, `"varistor"` or `"thermistor"`) drives a per-type `oneOf` — mirrors the SAS pattern.
 
-Fields common to both device types:
+Fields common to all device types:
 
 | Field | Type | Required | Unit | Description |
 |-------|------|----------|------|-------------|
-| `deviceType` | string (enum) | Yes | — | `resistor` or `varistor`; aligns with the RAS top-level field name |
+| `deviceType` | string (enum) | Yes | — | `resistor`, `varistor` or `thermistor`; aligns with the RAS top-level field name |
 | `maximumWorkingVoltage` | number ≥ 0 | No | V | Maximum DC working voltage allowed across the component |
 | `maximumOverloadVoltage` | number ≥ 0 | No | V | Maximum short-pulse / overload voltage |
 | `application` | string (enum) | No | — | PEAS `resistorApplication`: `power`, `precision`, `currentSense`, `pulseHandling`, `general` |
@@ -72,6 +73,18 @@ Inherited from PEAS `designRequirementsBase` (all optional): `name`, `market`, `
 | `maximumCapacitance` | number ≥ 0 | F | Maximum allowed capacitance (lower = better for high-frequency lines) |
 | `role` | string (enum) | — | `surgeProtection`, `esdProtection`, `snubber`, `voltageClamp` |
 | `allowedTechnologies` | array (enum items) | — | Subset of `metalOxide`, `siliconCarbide`, `multiLayer`, `polymer` |
+
+**Thermistor branch** (`deviceType: "thermistor"`) — **required: `resistanceAt25C`**:
+
+| Field | Type | Unit | Description |
+|-------|------|------|-------------|
+| `resistanceAt25C` | [dimensionWithTolerance](#dimensionwithtolerance) | Ohm | Required zero-power resistance R25 at 25 °C (required) |
+| `bConstant` | [dimensionWithTolerance](#dimensionwithtolerance) | K | Required B (beta) constant (NTC parts) |
+| `minimumSteadyStateCurrent` | number ≥ 0 | A | Required minimum continuous (steady-state) current capability (inrush limiters) |
+| `minimumEnergy` | number ≥ 0 | J | Required minimum single-event energy absorption capability, i.e. the capacitive load to charge (inrush limiters) |
+| `switchTemperature` | [dimensionWithTolerance](#dimensionwithtolerance) | °C | Required PTC switch / reference temperature |
+| `role` | string (enum) | — | `inrushLimiting`, `temperatureSensing`, `temperatureCompensation`, `overtemperatureProtection` |
+| `allowedTechnologies` | array (enum items) | — | Subset of `ntc`, `ptc` — items `$ref` the part-side anchor `thermistor.json#/$defs/technology`, so the two enums cannot drift |
 
 ---
 
@@ -171,7 +184,7 @@ Electrical characteristics of the resistor. **Required: `resistance`, `tolerance
 
 ## thermal
 
-Thermal characteristics, shared by resistor and varistor (`utils.json#/$defs/thermal`) — an `allOf` extension of PEAS `datasheetInfoThermal`. All fields optional.
+Thermal characteristics, shared by resistor, varistor and thermistor (`utils.json#/$defs/thermal`) — an `allOf` extension of PEAS `datasheetInfoThermal`. All fields optional.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -182,7 +195,7 @@ Thermal characteristics, shared by resistor and varistor (`utils.json#/$defs/the
 
 ## mechanical
 
-Mechanical dimensions and package information, shared by resistor and varistor (`utils.json#/$defs/mechanical`) — an `allOf` extension of PEAS `datasheetInfoMechanical`. The object is **flat** (no nested `dimensions`/`shape` sub-objects) and all fields are optional.
+Mechanical dimensions and package information, shared by resistor, varistor and thermistor (`utils.json#/$defs/mechanical`) — an `allOf` extension of PEAS `datasheetInfoMechanical`. The object is **flat** (no nested `dimensions`/`shape` sub-objects) and all fields are optional.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -291,6 +304,49 @@ Describes a varistor / MOV (Metal Oxide Varistor). Same outer shape as `resistor
 
 ---
 
+## thermistor.json
+
+Describes a thermistor (NTC or PTC) — a temperature-dependent resistor for inrush current limiting, temperature sensing/compensation and overtemperature protection. **Scope**: ceramic NTC and PTC *thermistors* only; resettable polymer PTC fuses (PPTC / "polyfuse") are protection parts and out of RAS scope. Same outer shape as `resistor.json` / `varistor.json`: closed object with `manufacturerInfo` (same required `name` + `datasheetInfo`) and `distributorsInfo`, plus the same `anyOf` allowing an **empty pre-sourcing seed** (`{}`).
+
+### thermistor datasheetInfo
+
+**Required: `part`, `electrical`.**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `part` | object | Yes | Part identification — same base as the resistor `part`, with the thermistor technology enum |
+| `electrical` | object | Yes | Thermistor electrical characteristics |
+| `thermal` | [thermal](#thermal) | No | Shared thermal section |
+| `mechanical` | [mechanical](#mechanical) | No | Shared flat mechanical section |
+| `provenance` | array | No | Data-provenance trail |
+
+### thermistor part
+
+**Required: `partNumber`, `technology`.** Same fields as the resistor part (`series`, `case`, `description`, `matchcodeDescription`), with the thermistor technology enum (a named `$def`, `thermistor.json#/$defs/technology`, so requirement-side `allowedTechnologies` can `$ref` it):
+
+| Value | Description |
+|-------|-------------|
+| `ntc` | Negative temperature coefficient — temperature sensing/compensation, inrush current limiting |
+| `ptc` | Positive temperature coefficient ceramic thermistor — overtemperature sensing, self-regulating heating (NOT a resettable polymer PTC fuse) |
+
+### thermistor electrical
+
+**Required: `resistanceAt25C`.** Optional fields are plain numbers (not nullable) — omit what the datasheet does not state. The field surface matches the live distributor parametric columns (R @ 25 °C, B value, steady-state current max, energy) plus the physics constants every NTC/PTC datasheet publishes.
+
+| Field | Type | Required | Unit | Description |
+|-------|------|----------|------|-------------|
+| `resistanceAt25C` | [dimensionWithTolerance](#dimensionwithtolerance) | Yes | Ohm | Zero-power resistance R25 at 25 °C |
+| `resistanceTolerance` | number ≥ 0 | No | fraction | Tolerance on `resistanceAt25C` (`0.05` = ±5%) |
+| `bConstant` | number > 0 | No | K | NTC B (beta) constant between the two `bConstantTemperatures`; PTC parts publish no B constant |
+| `bConstantTemperatures` | number[2] | No | °C | The two reference temperatures qualifying `bConstant`, ascending (B25/85 → `[25, 85]`) |
+| `maximumSteadyStateCurrent` | number ≥ 0 | No | A | Maximum continuous current — the headline rating of NTC inrush limiters |
+| `maximumEnergy` | number ≥ 0 | No | J | Maximum single-event energy absorption (capacitive load rating) |
+| `dissipationConstant` | number > 0 | No | W/K | Dissipation constant δth (power to raise the body 1 K above ambient in still air) |
+| `thermalTimeConstant` | number > 0 | No | s | Thermal (cooling) time constant τc — 63.2% of the temperature step after power removal |
+| `switchTemperature` | number | No | °C | PTC switch / reference temperature T_ref where resistance begins its steep rise (PTC only) |
+
+---
+
 ## outputs (outputs.json)
 
 Computed results for **one operating point**; the top-level RAS document holds an **array** of these, aligned positionally with `inputs.operatingPoints`. Each of the 7 named blocks is independently optional; every block is an `allOf` over the PEAS `outputBase` provenance shell — `origin` (`manufacturer`/`measurement`/`simulation`) and `methodUsed` are **required** in every block — and is sealed with `unevaluatedProperties: false`.
@@ -346,7 +402,7 @@ An array of numeric values.
 
 ## Provenance (data-source trail)
 
-Every `datasheetInfo` (resistor and varistor) carries an optional `provenance` array recording where its data
+Every `datasheetInfo` (resistor, varistor and thermistor) carries an optional `provenance` array recording where its data
 came from. Optional and closed, so records without it remain valid. Each entry:
 
 | field | meaning |

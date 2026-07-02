@@ -1,0 +1,107 @@
+{
+  "inputs": {
+    "operatingPoints": [
+      {
+        "name": "steady state after inrush",
+        "conditions": {
+          "ambientTemperature": 25
+        },
+        "excitation": {
+          "frequency": 50,
+          "voltage": {
+            "processed": {
+              "label": "sinusoidal",
+              "peak": 2.8,
+              "offset": 0
+            }
+          },
+          "current": {
+            "processed": {
+              "label": "sinusoidal",
+              "peak": 7.07,
+              "offset": 0
+            }
+          }
+        }
+      }
+    ],
+    "designRequirements": {
+      "name": "230 Vac SMPS bulk-capacitor inrush limiter",
+      "deviceType": "thermistor",
+      "resistanceAt25C": {
+        "nominal": 10
+      },
+      "minimumSteadyStateCurrent": 5,
+      "minimumEnergy": 40,
+      "role": "inrushLimiting",
+      "allowedTechnologies": [
+        "ntc"
+      ]
+    }
+  },
+  "thermistor": {
+    "manufacturerInfo": {
+      "name": "Ametherm",
+      "reference": "SL22 10005",
+      "status": "production",
+      "datasheetInfo": {
+        "part": {
+          "partNumber": "SL22 10005",
+          "series": "SL",
+          "technology": "ntc",
+          "case": "SL22",
+          "matchcodeDescription": "10 Ohm / 5 A / 22 mm disc NTC inrush current limiter"
+        },
+        "electrical": {
+          "resistanceAt25C": {
+            "nominal": 10
+          },
+          "resistanceTolerance": 0.2,
+          "bConstant": 2700,
+          "bConstantTemperatures": [
+            25,
+            85
+          ],
+          "maximumSteadyStateCurrent": 5,
+          "maximumEnergy": 50,
+          "dissipationConstant": 0.0248,
+          "thermalTimeConstant": 95
+        },
+        "thermal": {
+          "operatingTemperature": {
+            "minimum": -40,
+            "maximum": 170
+          }
+        },
+        "mechanical": {
+          "assemblyType": "tht",
+          "case": "SL22",
+          "shapeType": "Disc",
+          "diameter": {
+            "nominal": 0.0225
+          },
+          "height": {
+            "nominal": 0.007
+          }
+        }
+      }
+    },
+    "distributorsInfo": [
+      {
+        "name": "Digi-Key",
+        "reference": "570-1032-ND",
+        "cost": {
+          "value": 1.62,
+          "currency": "USD"
+        },
+        "stock": 5400,
+        "packaging": "Bulk",
+        "vpe": 1,
+        "moq": 1
+      }
+    ]
+  },
+  "outputs": [
+    {}
+  ]
+}
