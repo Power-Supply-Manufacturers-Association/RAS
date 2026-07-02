@@ -40,17 +40,23 @@ This separation follows the same principle as MAS: raw component data (cores, ma
 
 ## Supported Technologies
 
-RAS covers all major resistor technologies used in power electronics:
+The resistor `technology` field is a closed 11-value enum (`schemas/resistor.json`); the requirements-side `allowedTechnologies` uses the same values.
 
 | Technology | Typical Use | Key Properties |
 |------------|-------------|----------------|
 | **thinFilm** | Precision circuits, feedback dividers | Low TCR (5-50 ppm/K), tight tolerance (0.1-1%) |
 | **thickFilm** | General purpose, pull-up/pull-down | Low cost, moderate TCR (100 ppm/K), 1-5% tolerance |
+| **metalFilm** | Precision leaded resistors | Low noise, good stability, 50-100 ppm/K |
+| **metalOxide** | High voltage, flame-proof | High voltage rating, good surge capability |
 | **wirewound** | High power, current limiting | High power rating, low resistance values, inductive |
 | **carbonComposition** | Surge absorption, legacy designs | High pulse handling, high noise |
-| **metalOxide** | High voltage, flame-proof | High voltage rating, good surge capability |
-| **foil** | Ultra-precision measurement | Extremely low TCR (<1 ppm/K), 0.01% tolerance |
-| **shunt** | Current sensing, power metering | Very low resistance (mOhm range), 4-terminal Kelvin |
+| **carbonFilm** | Low-cost general purpose (leaded) | Cheap, moderate performance |
+| **metalFoil** | Ultra-precision measurement | Extremely low TCR (<1 ppm/K), 0.01% tolerance |
+| **bulkMetalFoil** | Ultimate precision (Vishay bulk foil) | Best-in-class TCR and long-term stability |
+| **currentSenseShunt** | Current sensing, power metering | Very low resistance (mOhm range), 4-terminal Kelvin |
+| **melf** | Precision/pulse SMD (cylindrical) | Metal-film performance in SMD form, good pulse handling |
+
+Varistors have their own 4-value technology enum (`schemas/varistor.json`): `metalOxide` (disc MOVs), `siliconCarbide`, `multiLayer` (chip MLVs), `polymer`.
 
 ### Technology Selection Flowchart
 
@@ -59,11 +65,11 @@ flowchart TD
     Start["Select Resistor"] --> Role{"Circuit Role?"}
 
     Role -->|"Current Sensing"| Sense{"Sense Current?"}
-    Sense -->|"> 1A"| Shunt["shunt<br/>mOhm range, 4-terminal Kelvin<br/>Low TCR, high power"]
+    Sense -->|"> 1A"| Shunt["currentSenseShunt<br/>mOhm range, 4-terminal Kelvin<br/>Low TCR, high power"]
     Sense -->|"< 1A"| ThinSense["thinFilm<br/>Tight tolerance, low TCR"]
 
     Role -->|"Feedback Divider /<br/>Precision"| Precision{"Accuracy Needed?"}
-    Precision -->|"< 0.1%"| Foil["foil<br/>Ultra-low TCR < 1 ppm/K<br/>0.01% tolerance"]
+    Precision -->|"< 0.1%"| Foil["metalFoil / bulkMetalFoil<br/>Ultra-low TCR < 1 ppm/K<br/>0.01% tolerance"]
     Precision -->|"0.1-1%"| ThinFilm["thinFilm<br/>5-50 ppm/K TCR<br/>0.1-1% tolerance"]
 
     Role -->|"General Purpose /<br/>Pull-up, Pull-down"| ThickFilm["thickFilm<br/>Low cost, 100 ppm/K<br/>1-5% tolerance"]
@@ -71,7 +77,7 @@ flowchart TD
     Role -->|"High Power /<br/>Current Limiting"| Wirewound["wirewound<br/>High power rating<br/>Caution: inductive"]
 
     Role -->|"Surge Absorption /<br/>High Voltage"| Surge{"Requirement?"}
-    Surge -->|"High pulse energy"| Carbon["carbonComposition<br/>High pulse handling"]
+    Surge -->|"High pulse energy"| Carbon["carbonComposition / melf<br/>High pulse handling"]
     Surge -->|"High voltage"| MetalOx["metalOxide<br/>High voltage, flame-proof"]
 ```
 
@@ -96,56 +102,90 @@ Every RAS document has three sections:
 
 ```
 +----------------+     +----------------+     +----------------+
-|     INPUTS     |     |    RESISTOR    |     |    OUTPUTS     |
+|     INPUTS     |     |    RESISTOR    |     |   OUTPUTS[]    |
 +----------------+     +----------------+     +----------------+
 | What you NEED  |  +  | What you HAVE  |  =  | What you GET   |
-|                |     |                |     |                |
-| * Voltage      |     | * Part number  |     | * Power diss.  |
-| * Current      |     | * Resistance   |     | * Temp. rise   |
-| * Temperature  |     | * Tolerance    |     | * Lifetime     |
-| * Constraints  |     | * TCR          |     | * Derating     |
-|                |     | * Dimensions   |     |                |
+|                |     |                |     | (per op point) |
+| * Operating    |     | * Part number  |     | * Power diss.  |
+|   points (V/I) |     | * Resistance   |     | * Temp. rise   |
+| * Design       |     | * Tolerance    |     | * Pulse stress |
+|   requirements |     | * TCR          |     | * Lifetime     |
+|   (R, power,   |     | * Dimensions   |     | * Drift, noise |
+|    role, ...)  |     | * Derating     |     |                |
 +----------------+     +----------------+     +----------------+
 ```
+
+`inputs` is fully structured: `operatingPoints[]` (PEAS `twoTerminalOperatingPoint`) plus `designRequirements` with a `deviceType` discriminator (`resistor` requires `resistance`; `varistor` requires `ratedContinuousVoltage` plus at least one of `minimumEnergyAbsorption` / `minimumPeakSurgeCurrent`). `outputs` is an **array** of per-operating-point result bundles (7 sealed blocks: `powerDissipation`, `temperature`, `effectiveResistance`, `pulseStress`, `lifetime`, `noise`, `drift`), each carrying `{origin, methodUsed}` provenance.
 
 ### Schema Hierarchy
 
 RAS.json carries `inputs`, `outputs`, and **exactly one** of `{resistor,
 varistor}` (a top-level `oneOf` — the field name is the device discriminator).
+Both component objects also allow an **empty seed** (`{}`) for pre-sourcing slots.
 
 ```
-RAS.json                          # Top-level: inputs + (resistor | varistor) + outputs
-  +-- inputs.json                 # Operating points (+ inputs/designRequirements.json)
+RAS.json                          # Top-level: inputs + (resistor | varistor) + outputs[]
+  +-- inputs.json                 # Operating points + design requirements
+  |     +-- inputs/designRequirements.json   # deviceType-discriminated (resistor | varistor)
   +-- resistor.json               # Resistor component data
-  |     +-- manufacturerInfo
-  |           +-- datasheetInfo
-  |                 +-- part          # Identification
-  |                 +-- electrical    # Electrical specs
-  |                 +-- thermal       # Temperature range
-  |                 +-- mechanical    # Dimensions, shape
-  |                 +-- business      # Pricing, packaging
-  |                 +-- modelParams   # SPICE parameters
-  |                 +-- factors       # Derating curves
+  |     +-- manufacturerInfo (name + datasheetInfo required)
+  |     |     +-- datasheetInfo
+  |     |           +-- part          # Identification + technology enum
+  |     |           +-- electrical    # Electrical specs
+  |     |           +-- thermal       # Temperature range, Rth      (shared, utils.json)
+  |     |           +-- mechanical    # Flat: L/W/H/diameter, case  (shared, utils.json)
+  |     |           +-- modelParams   # SPICE parameters
+  |     |           +-- factors       # powerDerating curve
+  |     +-- distributorsInfo          # Commercial data (PEAS distributorInfo)
   +-- varistor.json               # Varistor (MOV) component data — same outer shape
-  +-- outputs.json                # Computed results (power dissipation, temp rise, …)
-  +-- utils.json                  # Shared types
-        +-- dimensionWithTolerance
-        +-- curve
-        +-- numberArray
+  |                               #   (+ viCurve; electrical requires varistorVoltage,
+  |                               #    clampingVoltage, peakSurgeCurrent)
+  +-- outputs.json                # Computed results (7 sealed per-operating-point blocks)
+  +-- utils.json                  # RAS shared types
+        +-- thermal
+        +-- mechanical
+        +-- deratingCurve
 ```
+
+Generic primitives (`dimensionWithTolerance`, `curve`, `numberArray`, `distributorInfo`, `provenance`) come from `PEAS/schemas/utils.json`, referenced by absolute `$id`. There is no `business` section: packaging, MOQ, and pricing live in `distributorsInfo`.
 
 ---
 
 ## Examples
 
-### Example 1: Standard Thick Film Resistor (CRCW0603)
+All three examples live in `examples/` and validate against `schemas/RAS.json`. The snippets below are trimmed for readability but schema-true.
+
+### Example 1: Standard Thick Film Resistor (`examples/01_resistor_crcw0603.json`)
 
 A Vishay CRCW0603 10k Ohm, 1%, 0.1W thick film chip resistor:
 
 ```json
 {
+    "inputs": {
+        "operatingPoints": [
+            {
+                "name": "nominal",
+                "conditions": {"ambientTemperature": 25},
+                "excitation": {
+                    "frequency": 1000,
+                    "voltage": {"processed": {"label": "sinusoidal", "peak": 5, "offset": 0}},
+                    "current": {"processed": {"label": "sinusoidal", "peak": 0.0005, "offset": 0}}
+                }
+            }
+        ],
+        "designRequirements": {
+            "name": "10k feedback divider",
+            "deviceType": "resistor",
+            "resistance": {"nominal": 10000},
+            "powerRating": 0.1,
+            "maximumTcr": 200,
+            "allowedTechnologies": ["thinFilm", "thickFilm"]
+        }
+    },
     "resistor": {
         "manufacturerInfo": {
+            "name": "Vishay",
+            "reference": "CRCW060310K0FKEA",
             "datasheetInfo": {
                 "part": {
                     "partNumber": "CRCW060310K0FKEA",
@@ -167,28 +207,27 @@ A Vishay CRCW0603 10k Ohm, 1%, 0.1W thick film chip resistor:
                     "operatingTemperature": {"minimum": -55, "maximum": 155}
                 },
                 "mechanical": {
-                    "dimensions": {
-                        "length": {"nominal": 0.0016},
-                        "width": {"nominal": 0.0008},
-                        "height": {"nominal": 0.00045}
-                    },
-                    "shape": {
-                        "assembly": "SMT",
-                        "shapeType": "SMD Chip"
-                    }
+                    "assemblyType": "smt",
+                    "case": "0603",
+                    "shapeType": "SMD chip",
+                    "length": {"nominal": 0.0016},
+                    "width": {"nominal": 0.0008},
+                    "height": {"nominal": 0.00045}
                 },
                 "modelParams": {
                     "r": 10000,
-                    "tcr1": 100e-6,
-                    "tcr2": null
+                    "tcr1": 0.0001
                 },
                 "factors": {
-                    "powerDeratingTemperature": [70, 100, 125, 155],
-                    "powerDeratingAmplitude": [1.0, 0.65, 0.35, 0.0]
+                    "powerDerating": {
+                        "temperature": [70, 100, 125, 155],
+                        "amplitude": [1.0, 0.65, 0.35, 0.0]
+                    }
                 }
             }
         }
-    }
+    },
+    "outputs": [{}]
 }
 ```
 
@@ -196,23 +235,46 @@ Key points:
 - **resistance** uses `dimensionWithTolerance` -- here only `nominal` is given (10 kOhm)
 - **tolerance** is a fraction: 0.01 means 1%
 - **temperatureCoefficient** is in ppm/K: 100 ppm/K
+- **mechanical** is a flat object: dimensions, `shapeType`, `case`, and `assemblyType` (lowercase PEAS `connectionType`: `smt`, `tht`, ...) sit side by side
 - **dimensions** are in meters (SI units throughout)
-- **powerDeratingTemperature/Amplitude** define the derating curve: full power up to 70 C, linearly derated to zero at 155 C
-- **modelParams.tcr1** converts the TCR to 1/K for SPICE: 100 ppm/K = 100e-6 /K
+- **factors.powerDerating** holds the derating curve as paired `temperature`/`amplitude` arrays: full power up to 70 C, linearly derated to zero at 155 C
+- **modelParams.tcr1** converts the TCR to 1/K for SPICE: 100 ppm/K = 0.0001 /K (omit `tcr2` when unknown -- it is not nullable)
 
-### Example 2: Current Sense Shunt Resistor (WSK2512)
+### Example 2: Current Sense Shunt Resistor (`examples/02_shunt_resistor_wsk2512.json`)
 
 A Vishay WSK2512 10 mOhm, 1%, 1W shunt resistor for current sensing:
 
 ```json
 {
+    "inputs": {
+        "operatingPoints": [
+            {
+                "name": "nominal",
+                "conditions": {"ambientTemperature": 25},
+                "excitation": {
+                    "frequency": 100000,
+                    "voltage": {"processed": {"label": "rectangular", "peak": 0.2, "offset": 0.1}},
+                    "current": {"processed": {"label": "rectangular", "peak": 20, "offset": 10}}
+                }
+            }
+        ],
+        "designRequirements": {
+            "name": "current sense shunt",
+            "deviceType": "resistor",
+            "resistance": {"nominal": 0.01},
+            "powerRating": 1.0,
+            "allowedTechnologies": ["currentSenseShunt", "metalFoil", "wirewound"]
+        }
+    },
     "resistor": {
         "manufacturerInfo": {
+            "name": "Vishay",
+            "reference": "WSK2512R0100FEA",
             "datasheetInfo": {
                 "part": {
                     "partNumber": "WSK2512R0100FEA",
                     "series": "WSK2512",
-                    "technology": "shunt",
+                    "technology": "currentSenseShunt",
                     "case": "2512",
                     "matchcodeDescription": "10mOhm 1% 1W 2512 Current Sense Shunt"
                 },
@@ -228,37 +290,125 @@ A Vishay WSK2512 10 mOhm, 1%, 1W shunt resistor for current sensing:
                     "operatingTemperature": {"minimum": -55, "maximum": 170}
                 },
                 "mechanical": {
-                    "dimensions": {
-                        "length": {"nominal": 0.0064},
-                        "width": {"nominal": 0.0032},
-                        "height": {"nominal": 0.0006}
-                    },
-                    "shape": {
-                        "assembly": "SMT",
-                        "shapeType": "SMD Chip"
-                    }
+                    "assemblyType": "smt",
+                    "case": "2512",
+                    "shapeType": "SMD chip",
+                    "length": {"nominal": 0.0064},
+                    "width": {"nominal": 0.0032},
+                    "height": {"nominal": 0.0006}
                 },
                 "modelParams": {
                     "r": 0.01,
-                    "tcr1": 75e-6,
-                    "tcr2": null
+                    "tcr1": 7.5e-05
                 },
                 "factors": {
-                    "powerDeratingTemperature": [70, 100, 130, 155, 170],
-                    "powerDeratingAmplitude": [1.0, 0.7, 0.4, 0.15, 0.0]
+                    "powerDerating": {
+                        "temperature": [70, 100, 130, 155, 170],
+                        "amplitude": [1.0, 0.7, 0.4, 0.15, 0.0]
+                    }
                 }
             }
         }
-    }
+    },
+    "outputs": [{}]
 }
 ```
 
 Key points:
-- **technology** is `"shunt"` -- metal alloy element designed for current sensing
+- **technology** is `"currentSenseShunt"` -- metal alloy element designed for current sensing
 - Very low resistance (10 mOhm) with tight TCR (75 ppm/K) for accurate current measurement
 - Higher power rating (1W) in a larger 2512 package
 - Extended temperature range up to 170 C
 - Five-point derating curve for more precise thermal management
+
+### Example 3: Disc MOV Varistor (`examples/03_varistor_b72214.json`)
+
+An EPCOS / TDK B72214 (S14K275) 275 Vrms metal-oxide disc varistor for 230 Vac mains surge clamping. Note the `varistor` top-level field and the `deviceType: "varistor"` requirements branch:
+
+```json
+{
+    "inputs": {
+        "operatingPoints": [
+            {
+                "name": "ac mains surge protection",
+                "conditions": {"ambientTemperature": 25},
+                "excitation": {
+                    "frequency": 50,
+                    "voltage": {"processed": {"label": "sinusoidal", "peak": 325, "offset": 0}},
+                    "current": {"processed": {"label": "sinusoidal", "peak": 0.0005, "offset": 0}}
+                }
+            }
+        ],
+        "designRequirements": {
+            "name": "230 Vac mains surge clamp",
+            "deviceType": "varistor",
+            "ratedContinuousVoltage": 275,
+            "voltageType": "ac",
+            "maximumClampingVoltage": 710,
+            "minimumPeakSurgeCurrent": 6000,
+            "minimumEnergyAbsorption": 80,
+            "role": "surgeProtection",
+            "allowedTechnologies": ["metalOxide"]
+        }
+    },
+    "varistor": {
+        "manufacturerInfo": {
+            "name": "EPCOS / TDK",
+            "reference": "B72214S2271K101",
+            "status": "production",
+            "datasheetInfo": {
+                "part": {
+                    "partNumber": "B72214S2271K101",
+                    "series": "S14K",
+                    "technology": "metalOxide",
+                    "case": "S14"
+                },
+                "electrical": {
+                    "varistorVoltage": {"minimum": 387, "nominal": 430, "maximum": 473},
+                    "maxContinuousAcVoltage": 275,
+                    "maxContinuousDcVoltage": 350,
+                    "clampingVoltage": 710,
+                    "clampingCurrent": 100,
+                    "peakSurgeCurrent": 6000,
+                    "surgeWaveform": "8/20",
+                    "energyAbsorption": 110,
+                    "capacitance": 3.2e-10,
+                    "leakageCurrent": 5e-05,
+                    "nonlinearityCoefficient": 35
+                },
+                "thermal": {
+                    "operatingTemperature": {"minimum": -40, "maximum": 85}
+                },
+                "mechanical": {
+                    "assemblyType": "tht",
+                    "case": "S14",
+                    "shapeType": "Disc",
+                    "diameter": {"nominal": 0.014},
+                    "height": {"nominal": 0.0042}
+                }
+            }
+        },
+        "distributorsInfo": [
+            {
+                "name": "Digi-Key",
+                "reference": "495-2424-ND",
+                "cost": {"value": 0.22, "currency": "USD"},
+                "stock": 18000,
+                "packaging": "Bulk",
+                "vpe": 1000,
+                "moq": 1
+            }
+        ]
+    },
+    "outputs": [{}]
+}
+```
+
+Key points:
+- The varistor electrical trio **varistorVoltage / clampingVoltage / peakSurgeCurrent** is required
+- `energyAbsorption` is optional -- multilayer chip varistors publish no Joule rating
+- The varistor design-requirements branch requires `ratedContinuousVoltage` plus at least one of `minimumEnergyAbsorption` / `minimumPeakSurgeCurrent`
+- Commercial data (cost, stock, MOQ) lives in `distributorsInfo`, not inside `datasheetInfo`
 
 ---
 
@@ -269,13 +419,13 @@ PEAS (Power Electronics Agnostic Structure) -- abstract base
  +-- MAS (Magnetic)    -- inductors, transformers, chokes
  +-- SAS (Semiconductor) -- MOSFETs, diodes, IGBTs
  +-- CAS (Capacitor)   -- ceramic, electrolytic, film caps
- +-- RAS (Resistor)    -- this schema
+ +-- RAS (Resistor)    -- this schema (resistors + varistors)
  |
  +-> TAS (Topology Agnostic Structure) -- complete converter designs
        references PEAS components (inline or by path)
 ```
 
-A RAS document with `inputs` and `outputs` is a valid PEAS document. TAS references PEAS documents to describe complete power converter designs, where resistors serve roles such as `currentSenseResistor`, `gateResistor`, `feedbackResistor`, `bleederResistor`, `snubberResistor`, or `clampResistor`.
+A RAS document with `inputs` and `outputs` is a valid PEAS document. TAS references PEAS documents to describe complete power converter designs, where resistors serve roles such as `currentSense`, `gate`, `feedback`, `bleed`, `snubber`, or `preCharge` (the `designRequirements.role` enum).
 
 ---
 
@@ -290,6 +440,8 @@ All values use SI base units:
 | TCR | ppm/K | `100` = 100 ppm/K |
 | Power | Watts | `0.1` = 100 mW |
 | Voltage | Volts | `75` = 75 V |
+| Energy | Joules | `110` = 110 J |
+| Capacitance | Farads | `3.2e-10` = 320 pF |
 | Temperature | Celsius | `70` = 70 C |
 | Dimensions | Meters | `0.0016` = 1.6 mm |
 | tcr1 (SPICE) | 1/K | `100e-6` = 100 ppm/K |
@@ -302,26 +454,29 @@ All values use SI base units:
 ```
 RAS/
 +-- schemas/
-|     +-- RAS.json          # Top-level: inputs + (resistor | varistor) + outputs
-|     +-- inputs.json       # Operating points
+|     +-- RAS.json          # Top-level: inputs + (resistor | varistor) + outputs[]
+|     +-- inputs.json       # Operating points + design requirements
 |     +-- inputs/
-|     |     +-- designRequirements.json
+|     |     +-- designRequirements.json   # deviceType-discriminated requirements
 |     +-- resistor.json     # Resistor component schema
 |     +-- varistor.json     # Varistor (MOV) component schema
-|     +-- outputs.json      # Computed results schema
-|     +-- utils.json        # Shared types (dimensionWithTolerance, curve, numberArray)
+|     +-- outputs.json      # Computed results schema (7 sealed blocks)
+|     +-- utils.json        # RAS shared types (thermal, mechanical, deratingCurve)
 +-- data/
 |     +-- resistors.ndjson  # Manufacturing building blocks (series definitions)
 +-- examples/
-      +-- 01_resistor_crcw0603.json        # Thick film chip resistor
-      +-- 02_shunt_resistor_wsk2512.json   # Current sense shunt resistor
+|     +-- 01_resistor_crcw0603.json        # Thick film chip resistor
+|     +-- 02_shunt_resistor_wsk2512.json   # Current sense shunt resistor
+|     +-- 03_varistor_b72214.json          # Metal-oxide disc varistor (MOV)
++-- docs/
+      +-- schema.md         # Detailed field-by-field schema reference
 ```
 
 ---
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License -- see the [LICENSE](LICENSE) file.
 
 ---
 

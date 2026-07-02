@@ -52,9 +52,6 @@
             }
         }
     },
-    "required": [
-        "manufacturerInfo"
-    ],
     "$defs": {
         "datasheetInfo": {
             "title": "varistorDatasheetInfo",
@@ -188,5 +185,16 @@
                 "peakSurgeCurrent"
             ]
         }
-    }
+    },
+    "anyOf": [
+        {
+            "required": [
+                "manufacturerInfo"
+            ]
+        },
+        {
+            "$comment": "Empty pre-sourcing seed: an abstract varistor slot before librarian binding (family-wide seed convention).",
+            "maxProperties": 0
+        }
+    ]
 }

@@ -191,10 +191,18 @@ def test_resistor_required_electrical_fields(ras_validator, resistor_doc):
 
 
 def test_varistor_required_electrical_fields(ras_validator, varistor_doc):
-    for field in ("varistorVoltage", "clampingVoltage", "peakSurgeCurrent", "energyAbsorption"):
+    # energyAbsorption is deliberately NOT here: multilayer/ESD chip varistors
+    # publish no Joule rating (see its description in varistor.json).
+    for field in ("varistorVoltage", "clampingVoltage", "peakSurgeCurrent"):
         bad = copy.deepcopy(varistor_doc)
         del bad["varistor"]["manufacturerInfo"]["datasheetInfo"]["electrical"][field]
         assert_invalid(ras_validator, bad)
+
+
+def test_varistor_energy_absorption_optional(ras_validator, varistor_doc):
+    ok = copy.deepcopy(varistor_doc)
+    del ok["varistor"]["manufacturerInfo"]["datasheetInfo"]["electrical"]["energyAbsorption"]
+    assert_valid(ras_validator, ok)
 
 
 def test_part_no_device_type_property(ras_validator, resistor_doc):
