@@ -46,23 +46,13 @@ double resolve_resistance(const json& peas, const PEAS::Fidelity& fidelity) {
     return PEAS::resolve_dimensional_values(datasheet.get_electrical().get_resistance());
 }
 
-// A minimal ideal-resistor PEAS document carrying just the value — the leaf atom the CIAS
-// converter reads (resistor...electrical.resistance.nominal) to emit an R card. Built with
-// explicit assignment to avoid nlohmann brace-init ambiguity.
+// A minimal ideal-resistor leaf atom carrying just the value in inputs.designRequirements — where
+// the CIAS converter now reads it (inputs.designRequirements.resistance) to emit an R card. The
+// `resistor` object is the empty PEAS discriminator CIAS dispatches on.
 json make_resistor_atom(double r) {
-    json electrical;
-    electrical["resistance"]["nominal"] = r;
-    electrical["tolerance"] = 0.0;
-    electrical["powerRating"] = 0.0;
-
-    json datasheet;
-    datasheet["part"]["partNumber"] = "ideal";
-    datasheet["part"]["technology"] = "thickFilm";
-    datasheet["electrical"] = electrical;
-
     json atom;
-    atom["resistor"]["manufacturerInfo"]["name"] = "ideal";
-    atom["resistor"]["manufacturerInfo"]["datasheetInfo"] = datasheet;
+    atom["resistor"] = json::object();
+    atom["inputs"]["designRequirements"]["resistance"]["nominal"] = r;
     return atom;
 }
 

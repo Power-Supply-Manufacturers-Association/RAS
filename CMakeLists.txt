@@ -24,6 +24,7 @@ add_custom_command(
             "${CMAKE_CURRENT_SOURCE_DIR}/schemas/RAS.json"
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/resistor.json"
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/varistor.json"
+            -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/thermistor.json"
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/inputs.json"
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/inputs/designRequirements.json"
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/outputs.json"
