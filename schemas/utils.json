@@ -45,6 +45,14 @@
                         "case": {
                             "type": "string",
                             "description": "Package code (e.g. 0603, 2512, axial)."
+                        },
+                        "pinout": {
+                            "description": "Per-terminal function map (shared PEAS type, hoisted 2026-08). Rarely needed for 2-terminal parts; real for current-sense 4-terminal (Kelvin) resistors and resistor networks.",
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/pinout"
+                        },
+                        "landPattern": {
+                            "description": "Manufacturer-recommended PCB land pattern (shared PEAS type, hoisted 2026-08).",
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/landPattern"
                         }
                     },
                     "additionalProperties": false

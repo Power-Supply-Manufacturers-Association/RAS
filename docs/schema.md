@@ -197,6 +197,8 @@ Thermal characteristics, shared by resistor, varistor and thermistor (`utils.jso
 
 Mechanical dimensions and package information, shared by resistor, varistor and thermistor (`utils.json#/$defs/mechanical`) — an `allOf` extension of PEAS `datasheetInfoMechanical`. The object is **flat** (no nested `dimensions`/`shape` sub-objects) and all fields are optional.
 
+- **`pinout`** / **`landPattern`** — optional, both the **shared PEAS types** (`https://psma.com/peas/utils.json#/$defs/pinout` and `#/$defs/landPattern`, hoisted 2026-08): per-terminal `(pin, name, function)` map using the family-wide `pinFunction` vocabulary, and the manufacturer-recommended PCB land pattern (pad centres/sizes/drills). No module defines its own variant of these types — additions to the vocabulary go to PEAS.
+
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `length` | [dimensionWithTolerance](#dimensionwithtolerance) | No | Body length in meters |
