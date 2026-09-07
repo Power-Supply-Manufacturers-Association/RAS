@@ -6,9 +6,11 @@ or:         python3 -m pytest tests/test_schemas.py -v
 Covers:
   * every RAS schema parses and passes Draft 2020-12 meta-validation
   * cross-document $refs resolve (RAS + PEAS schemas registered)
-  * the canonical examples (resistor, shunt, varistor, thermistor) validate
+  * the canonical examples (resistor, shunt, varistor, thermistor, potentiometer) validate
   * negative cases:
-      - top-level oneOf (must have exactly one of resistor/varistor/thermistor)
+      - top-level oneOf (must have exactly one of
+        resistor/varistor/thermistor/potentiometer)
+      - a fixed resistor must NOT validate as a potentiometer
       - manufacturerInfo / electrical required
       - per-type required electrical fields
       - additionalProperties: false enforced
@@ -38,6 +40,7 @@ RAS_SCHEMA_FILES = [
     "resistor.json",
     "varistor.json",
     "thermistor.json",
+    "potentiometer.json",
     "inputs/designRequirements.json",
 ]
 
@@ -95,6 +98,16 @@ def thermistor_doc():
     return _load(EXAMPLES_DIR / "04_thermistor_sl22.json")
 
 
+@pytest.fixture
+def potentiometer_doc():
+    return _load(EXAMPLES_DIR / "05_potentiometer_3296w_trimmer.json")
+
+
+@pytest.fixture
+def potentiometer_dual_doc():
+    return _load(EXAMPLES_DIR / "06_potentiometer_te_citec_dual.json")
+
+
 def assert_valid(validator, doc):
     errs = sorted(validator.iter_errors(doc), key=lambda e: list(e.path))
     assert not errs, "expected valid, got errors:\n" + "\n".join(
@@ -146,6 +159,19 @@ def test_thermistor_empty_seed_validates(ras_validator, thermistor_doc):
     assert_valid(ras_validator, thermistor_doc)
 
 
+def test_potentiometer_example_validates(ras_validator, potentiometer_doc):
+    assert_valid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_dual_gang_example_validates(ras_validator, potentiometer_dual_doc):
+    assert_valid(ras_validator, potentiometer_dual_doc)
+
+
+def test_potentiometer_empty_seed_validates(ras_validator, potentiometer_doc):
+    potentiometer_doc["potentiometer"] = {}
+    assert_valid(ras_validator, potentiometer_doc)
+
+
 # ---------------------------------------------------------------------------
 # Top-level oneOf
 # ---------------------------------------------------------------------------
@@ -161,7 +187,8 @@ def test_two_device_fields_invalid(ras_validator, resistor_doc, varistor_doc):
 
 
 def test_unknown_device_field_rejected(ras_validator, resistor_doc):
-    resistor_doc["potentiometer"] = resistor_doc.pop("resistor")
+    # `potentiometer` became a real RAS member in 2026-09; `rheostat` is not one.
+    resistor_doc["rheostat"] = resistor_doc.pop("resistor")
     assert_invalid(ras_validator, resistor_doc)
 
 
@@ -299,5 +326,133 @@ def test_design_requirements_thermistor_unknown_technology_rejected(ras_validato
 
 
 def test_design_requirements_unknown_device_type_rejected(ras_validator, resistor_doc):
+    resistor_doc["inputs"]["designRequirements"]["deviceType"] = "rheostat"
+    assert_invalid(ras_validator, resistor_doc)
+
+
+# ---------------------------------------------------------------------------
+# Potentiometer: the separation from a fixed resistor is the whole point
+# ---------------------------------------------------------------------------
+
+def test_fixed_resistor_does_not_validate_as_potentiometer(ras_validator, resistor_doc):
+    """The reason potentiometer is its own member.
+
+    A fixed resistor satisfies resistor.electrical's required set
+    (resistance, tolerance, powerRating). Re-labelling one as a potentiometer
+    must FAIL LOUDLY, not validate silently: potentiometer.electrical has no
+    `resistance` property and requires `totalResistance`.
+    """
+    resistor_doc["potentiometer"] = resistor_doc.pop("resistor")
     resistor_doc["inputs"]["designRequirements"]["deviceType"] = "potentiometer"
     assert_invalid(ras_validator, resistor_doc)
+
+
+def test_potentiometer_electrical_rejects_plain_resistance(ras_validator, potentiometer_doc):
+    electrical = potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["electrical"]
+    electrical["resistance"] = electrical.pop("totalResistance")
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_requires_total_resistance(ras_validator, potentiometer_doc):
+    del potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["electrical"]["totalResistance"]
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_unknown_technology_rejected(ras_validator, potentiometer_doc):
+    potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["part"]["technology"] = "metalOxide"
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_taper_and_turns_optional(ras_validator, potentiometer_doc):
+    """Absent on all 106 sourced TE parts today -- the schema must not force them."""
+    ds = potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]
+    del ds["electrical"]["taper"]
+    del ds["mechanical"]["actuation"]["turns"]
+    assert_valid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_taper_requires_law(ras_validator, potentiometer_doc):
+    potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["electrical"]["taper"] = {}
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_taper_unknown_law_rejected(ras_validator, potentiometer_doc):
+    potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["electrical"]["taper"] = {"law": "audio"}
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_logarithmic_taper_requires_sense(ras_validator, potentiometer_doc):
+    electrical = potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["electrical"]
+    electrical["taper"] = {"law": "logarithmic"}
+    assert_invalid(ras_validator, potentiometer_doc)
+    electrical["taper"] = {"law": "logarithmic", "sense": "log"}
+    assert_valid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_custom_taper_requires_curve(ras_validator, potentiometer_doc):
+    electrical = potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["electrical"]
+    electrical["taper"] = {"law": "custom"}
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_taper_branches_do_not_mix(ras_validator, potentiometer_doc):
+    """Pinned consts: a linear taper cannot carry the logarithmic branch's fields."""
+    electrical = potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["electrical"]
+    electrical["taper"] = {"law": "linear", "sense": "log"}
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_rotary_actuation_rejects_linear_fields(ras_validator, potentiometer_doc):
+    mechanical = potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["mechanical"]
+    mechanical["actuation"] = {"type": "linear", "turns": 25}
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_actuation_requires_type(ras_validator, potentiometer_doc):
+    mechanical = potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["mechanical"]
+    mechanical["actuation"] = {"turns": 25}
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_mechanical_extra_property_rejected(ras_validator, potentiometer_doc):
+    potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["mechanical"]["bogus"] = 1
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_shaft_extra_property_rejected(ras_validator, potentiometer_doc):
+    potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["mechanical"]["shaft"]["bogus"] = 1
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_potentiometer_part_no_device_type_property(ras_validator, potentiometer_doc):
+    potentiometer_doc["potentiometer"]["manufacturerInfo"]["datasheetInfo"]["part"]["deviceType"] = "potentiometer"
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_design_requirements_potentiometer_requires_total_resistance(ras_validator, potentiometer_doc):
+    del potentiometer_doc["inputs"]["designRequirements"]["totalResistance"]
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_design_requirements_potentiometer_rejects_resistor_fields(ras_validator, potentiometer_doc):
+    potentiometer_doc["inputs"]["designRequirements"]["resistance"] = {"nominal": 10000}
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+def test_design_requirements_potentiometer_unknown_technology_rejected(ras_validator, potentiometer_doc):
+    potentiometer_doc["inputs"]["designRequirements"]["allowedTechnologies"] = ["metalOxide"]
+    assert_invalid(ras_validator, potentiometer_doc)
+
+
+# ---------------------------------------------------------------------------
+# cermet in the fixed-resistor technology enum (separable change)
+# ---------------------------------------------------------------------------
+
+def test_resistor_cermet_technology_accepted(ras_validator, resistor_doc):
+    resistor_doc["resistor"]["manufacturerInfo"]["datasheetInfo"]["part"]["technology"] = "cermet"
+    assert_valid(ras_validator, resistor_doc)
+
+
+def test_design_requirements_resistor_allows_cermet(ras_validator, resistor_doc):
+    resistor_doc["inputs"]["designRequirements"]["allowedTechnologies"] = ["cermet"]
+    assert_valid(ras_validator, resistor_doc)

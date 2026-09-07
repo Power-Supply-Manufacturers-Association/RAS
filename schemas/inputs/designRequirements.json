@@ -3,7 +3,7 @@
     "$id": "https://psma.com/ras/inputs/designRequirements.json",
     "$comment": "SPDX-License-Identifier: MIT",
     "title": "designRequirements",
-    "description": "The list of requirements that an RAS component (resistor, varistor or thermistor) must comply with. Built on top of the PEAS designRequirementsBase mixin, with a deviceType discriminator that drives per-type required ratings — mirrors the SAS pattern.",
+    "description": "The list of requirements that an RAS component (resistor, varistor, thermistor or potentiometer) must comply with. Built on top of the PEAS designRequirementsBase mixin, with a deviceType discriminator that drives per-type required ratings \u2014 mirrors the SAS pattern.",
     "allOf": [
         {
             "$ref": "https://psma.com/peas/utils.json#/$defs/designRequirementsBase"
@@ -17,7 +17,8 @@
                     "enum": [
                         "resistor",
                         "varistor",
-                        "thermistor"
+                        "thermistor",
+                        "potentiometer"
                     ]
                 },
                 "maximumWorkingVoltage": {
@@ -107,6 +108,7 @@
                                 "enum": [
                                     "thinFilm",
                                     "thickFilm",
+                                    "cermet",
                                     "metalFilm",
                                     "metalOxide",
                                     "wirewound",
@@ -215,7 +217,7 @@
                             "const": "thermistor"
                         },
                         "resistanceAt25C": {
-                            "description": "Required zero-power resistance R25 at 25 °C, in Ohm.",
+                            "description": "Required zero-power resistance R25 at 25 \u00b0C, in Ohm.",
                             "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
                         },
                         "bConstant": {
@@ -258,6 +260,76 @@
                     },
                     "required": [
                         "resistanceAt25C"
+                    ]
+                },
+                {
+                    "description": "Potentiometer-specific requirements",
+                    "properties": {
+                        "deviceType": {
+                            "const": "potentiometer"
+                        },
+                        "totalResistance": {
+                            "description": "Required end-to-end track resistance, in Ohm. The two wiper-split sections always sum to this value.",
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
+                        },
+                        "powerRating": {
+                            "description": "Required continuous power dissipation rating of the whole track, in W.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "wiperPosition": {
+                            "description": "Where the design expects the wiper to sit, as a dimensionless fraction (0..1) of electrical travel from the low end. This is the DESIGN-TIME FREE VARIABLE of a potentiometer: the split point, not a datasheet fact. Give it as a range when the design needs adjustment headroom.",
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
+                        },
+                        "taperLaw": {
+                            "description": "Required taper law. Vocabulary shared with the part side so the two cannot drift.",
+                            "$ref": "https://psma.com/ras/potentiometer.json#/$defs/taperLaw"
+                        },
+                        "minimumTurns": {
+                            "description": "Required minimum number of actuator turns end-to-end (dimensionless) \u2014 multiturn trimmers where setting resolution matters.",
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        },
+                        "gangs": {
+                            "description": "Required number of independent resistive sections operated by one actuator (1 = single, 2 = dual).",
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "maximumTemperatureCoefficient": {
+                            "description": "Maximum acceptable temperature coefficient of the track, in ppm/K.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "maximumWiperResistance": {
+                            "description": "Maximum acceptable wiper contact resistance, in Ohm.",
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "role": {
+                            "description": "Potentiometer role in the converter.",
+                            "type": "string",
+                            "enum": [
+                                "trimming",
+                                "voltageDivider",
+                                "rheostat",
+                                "feedbackAdjust",
+                                "referenceAdjust",
+                                "userControl",
+                                "positionSensing"
+                            ]
+                        },
+                        "allowedTechnologies": {
+                            "description": "Subset of potentiometer technologies acceptable for this design. If absent, all technologies are allowed.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "https://psma.com/ras/potentiometer.json#/$defs/technology"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                        }
+                    },
+                    "required": [
+                        "totalResistance"
                     ]
                 }
             ]

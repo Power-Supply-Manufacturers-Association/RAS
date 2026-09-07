@@ -1,0 +1,147 @@
+{
+  "inputs": {
+    "operatingPoints": [
+      {
+        "name": "reference-divider trim, wiper at mid-travel",
+        "conditions": {
+          "ambientTemperature": 25
+        },
+        "excitation": {
+          "frequency": 0,
+          "voltage": {
+            "processed": {
+              "label": "custom",
+              "peak": 5,
+              "offset": 5
+            }
+          },
+          "current": {
+            "processed": {
+              "label": "custom",
+              "peak": 0.0005,
+              "offset": 0.0005
+            }
+          }
+        }
+      }
+    ],
+    "designRequirements": {
+      "name": "5 V reference divider set-point trim",
+      "deviceType": "potentiometer",
+      "totalResistance": {
+        "nominal": 10000
+      },
+      "powerRating": 0.1,
+      "wiperPosition": {
+        "minimum": 0.35,
+        "nominal": 0.5,
+        "maximum": 0.65
+      },
+      "taperLaw": "linear",
+      "minimumTurns": 10,
+      "gangs": 1,
+      "maximumTemperatureCoefficient": 150,
+      "role": "trimming",
+      "allowedTechnologies": [
+        "cermet"
+      ]
+    }
+  },
+  "potentiometer": {
+    "manufacturerInfo": {
+      "name": "Bourns",
+      "reference": "3296W-1-103LF",
+      "status": "production",
+      "family": "3296",
+      "datasheetInfo": {
+        "part": {
+          "partNumber": "3296W-1-103LF",
+          "series": "3296",
+          "case": "3296W",
+          "technology": "cermet",
+          "adjustmentAccess": "trimmer",
+          "matchcodeDescription": "10 kOhm 25-turn cermet trimming potentiometer, top adjustment, through-hole"
+        },
+        "electrical": {
+          "totalResistance": {
+            "nominal": 10000
+          },
+          "resistanceTolerance": 0.1,
+          "powerRating": 0.5,
+          "powerRatingTemperature": 70,
+          "temperatureCoefficient": 100,
+          "maximumWorkingVoltage": 200,
+          "taper": {
+            "law": "linear"
+          },
+          "wiper": {
+            "resistance": 3,
+            "maximumCurrent": 0.1,
+            "contactResistanceVariation": 0.02
+          },
+          "endResistance": 2,
+          "independentLinearity": 0.02,
+          "gangs": 1
+        },
+        "thermal": {
+          "operatingTemperature": {
+            "minimum": -55,
+            "maximum": 125
+          }
+        },
+        "mechanical": {
+          "case": "3296W",
+          "shapeType": "rectangular",
+          "assemblyType": "tht",
+          "length": {
+            "nominal": 0.00953
+          },
+          "width": {
+            "nominal": 0.00483
+          },
+          "height": {
+            "nominal": 0.01003
+          },
+          "mounting": "board",
+          "adjustmentSide": "top",
+          "terminalOrientation": "vertical",
+          "rotationalLife": 200,
+          "shaft": {
+            "style": "screwdriverSlot"
+          },
+          "actuation": {
+            "type": "rotary",
+            "turns": 25,
+            "endStop": "clutched"
+          },
+          "pinout": [
+            {
+              "pin": "1",
+              "name": "CCW",
+              "function": "signal"
+            },
+            {
+              "pin": "2",
+              "name": "W",
+              "function": "other"
+            },
+            {
+              "pin": "3",
+              "name": "CW",
+              "function": "signal"
+            }
+          ]
+        },
+        "modelParams": {
+          "rTotal": 10000,
+          "wiperPosition": 0.5,
+          "rWiper": 3,
+          "taperExponent": 1
+        }
+      }
+    }
+  },
+  "outputs": [
+    {}
+  ]
+}

@@ -13,7 +13,7 @@
 
 ## What is RAS?
 
-**RAS is a standardized way to describe resistor components** (and varistors and thermistors) used in power electronics and general electronics design. It captures everything about a resistor -- identification, electrical characteristics, thermal behavior, mechanical dimensions, simulation parameters, and derating curves -- in a single machine-readable JSON document. A RAS document holds exactly one of a `resistor`, a `varistor` or a `thermistor` (the field name selects the device type).
+**RAS is a standardized way to describe resistor components** (and varistors, thermistors and potentiometers) used in power electronics and general electronics design. It captures everything about a resistor -- identification, electrical characteristics, thermal behavior, mechanical dimensions, simulation parameters, and derating curves -- in a single machine-readable JSON document. A RAS document holds exactly one of a `resistor`, a `varistor`, a `thermistor` or a `potentiometer` (the field name selects the device type).
 
 RAS is part of the [OpenConverters](https://github.com/OpenConverters) ecosystem and follows the same structural pattern established by [MAS (Magnetic Agnostic Structure)](https://github.com/OpenMagnetics/MAS). A valid RAS document, when wrapped with `inputs` and `outputs`, is also a valid [PEAS (Power Electronics Agnostic Structure)](../PEAS/) document.
 
@@ -40,12 +40,13 @@ This separation follows the same principle as MAS: raw component data (cores, ma
 
 ## Supported Technologies
 
-The resistor `technology` field is a closed 11-value enum (`schemas/resistor.json`); the requirements-side `allowedTechnologies` uses the same values.
+The resistor `technology` field is a closed 12-value enum (`schemas/resistor.json`); the requirements-side `allowedTechnologies` uses the same values.
 
 | Technology | Typical Use | Key Properties |
 |------------|-------------|----------------|
 | **thinFilm** | Precision circuits, feedback dividers | Low TCR (5-50 ppm/K), tight tolerance (0.1-1%) |
 | **thickFilm** | General purpose, pull-up/pull-down | Low cost, moderate TCR (100 ppm/K), 1-5% tolerance |
+| **cermet** | Resistor networks, high-voltage and high-stability parts | Ceramic-metal thick film fired on ceramic; stable, high voltage capability |
 | **metalFilm** | Precision leaded resistors | Low noise, good stability, 50-100 ppm/K |
 | **metalOxide** | High voltage, flame-proof | High voltage rating, good surge capability |
 | **wirewound** | High power, current limiting | High power rating, low resistance values, inductive |
@@ -59,6 +60,21 @@ The resistor `technology` field is a closed 11-value enum (`schemas/resistor.jso
 Varistors have their own 4-value technology enum (`schemas/varistor.json`): `metalOxide` (disc MOVs), `siliconCarbide`, `multiLayer` (chip MLVs), `polymer`.
 
 Thermistors have a 2-value technology enum (`schemas/thermistor.json#/$defs/technology`): `ntc` (temperature sensing/compensation, inrush current limiting), `ptc` (ceramic switching PTC — overtemperature sensing, self-regulating heating). **Scope note**: resettable polymer PTC fuses (PPTC / "polyfuse") are protection parts, NOT thermistors, and are out of RAS scope.
+
+Potentiometers have a 7-value technology enum (`schemas/potentiometer.json#/$defs/technology`): `cermet`, `carbonComposition`, `carbonFilm`, `conductivePlastic`, `wirewound`, `thickFilm`, `thinFilm`.
+
+### Why a potentiometer is not a resistor
+
+A potentiometer **satisfies every field the fixed-resistor `electrical` block requires** (`resistance`, `tolerance`, `powerRating`), so filing one as a `resistor` does not fail — it validates **silently** and quietly becomes wrong: nothing then records that the part is adjustable, has a third terminal, or has a taper. `thermistor` is the precedent for splitting a member out of `resistor`, and a thermistor differs from a fixed resistor *less* than a potentiometer does.
+
+The model is two resistances summing to a constant, split at a design-time free variable:
+
+```
+R_cw + R_ccw = totalResistance         at every wiper position
+R_cw         = taper(wiperPosition) * totalResistance
+```
+
+`potentiometer.electrical` has **no `resistance` property**; the headline value is `totalResistance`, so a fixed-resistor electrical block cannot be renamed into the potentiometer schema. `wiperPosition` (dimensionless, `0..1`) is a design choice, not a datasheet fact, and lives in `designRequirements` and `modelParams`. Two closed `oneOf` unions with pinned `const` discriminators carry the rest: `electrical.taper` (`law` ∈ `linear` / `logarithmic` + required `sense` / `sShaped` / `custom` + required `curve`) and `mechanical.actuation` (`type` ∈ `rotary`, with `turns` and travel **in degrees** / `linear`, with travel in metres).
 
 ### Technology Selection Flowchart
 
@@ -117,18 +133,18 @@ Every RAS document has three sections:
 +----------------+     +----------------+     +----------------+
 ```
 
-`inputs` is fully structured: `operatingPoints[]` (PEAS `twoTerminalOperatingPoint`) plus `designRequirements` with a `deviceType` discriminator (`resistor` requires `resistance`; `varistor` requires `ratedContinuousVoltage` plus at least one of `minimumEnergyAbsorption` / `minimumPeakSurgeCurrent`; `thermistor` requires `resistanceAt25C`). `outputs` is an **array** of per-operating-point result bundles (7 sealed blocks: `powerDissipation`, `temperature`, `effectiveResistance`, `pulseStress`, `lifetime`, `noise`, `drift`), each carrying `{origin, methodUsed}` provenance.
+`inputs` is fully structured: `operatingPoints[]` (PEAS `twoTerminalOperatingPoint`) plus `designRequirements` with a `deviceType` discriminator (`resistor` requires `resistance`; `varistor` requires `ratedContinuousVoltage` plus at least one of `minimumEnergyAbsorption` / `minimumPeakSurgeCurrent`; `thermistor` requires `resistanceAt25C`; `potentiometer` requires `totalResistance`). `outputs` is an **array** of per-operating-point result bundles (7 sealed blocks: `powerDissipation`, `temperature`, `effectiveResistance`, `pulseStress`, `lifetime`, `noise`, `drift`), each carrying `{origin, methodUsed}` provenance.
 
 ### Schema Hierarchy
 
 RAS.json carries `inputs`, `outputs`, and **exactly one** of `{resistor,
-varistor, thermistor}` (a top-level `oneOf` — the field name is the device discriminator).
+varistor, thermistor, potentiometer}` (a top-level `oneOf` — the field name is the device discriminator).
 All component objects also allow an **empty seed** (`{}`) for pre-sourcing slots.
 
 ```
-RAS.json                          # Top-level: inputs + (resistor | varistor | thermistor) + outputs[]
+RAS.json                          # Top-level: inputs + (resistor | varistor | thermistor | potentiometer) + outputs[]
   +-- inputs.json                 # Operating points + design requirements
-  |     +-- inputs/designRequirements.json   # deviceType-discriminated (resistor | varistor | thermistor)
+  |     +-- inputs/designRequirements.json   # deviceType-discriminated (resistor | varistor | thermistor | potentiometer)
   +-- resistor.json               # Resistor component data
   |     +-- manufacturerInfo (name + datasheetInfo required)
   |     |     +-- datasheetInfo
@@ -145,6 +161,11 @@ RAS.json                          # Top-level: inputs + (resistor | varistor | t
   +-- thermistor.json             # Thermistor (NTC / PTC) component data — same outer shape
   |                               #   (electrical requires resistanceAt25C; B constant,
   |                               #    inrush ratings, dissipation/time constants optional)
+  +-- potentiometer.json          # Potentiometer / rheostat / trimmer — same outer shape
+  |                               #   (electrical requires totalResistance — NOT `resistance`;
+  |                               #    taper + actuation are closed oneOf unions with pinned
+  |                               #    const discriminators; own mechanical block with the
+  |                               #    shaft / mounting / adjustment mechanics)
   +-- outputs.json                # Computed results (7 sealed per-operating-point blocks)
   +-- utils.json                  # RAS shared types
         +-- thermal
@@ -469,7 +490,7 @@ PEAS (Power Electronics Agnostic Structure) -- abstract base
  +-- MAS (Magnetic)    -- inductors, transformers, chokes
  +-- SAS (Semiconductor) -- MOSFETs, diodes, IGBTs
  +-- CAS (Capacitor)   -- ceramic, electrolytic, film caps
- +-- RAS (Resistor)    -- this schema (resistors + varistors + thermistors)
+ +-- RAS (Resistor)    -- this schema (resistors + varistors + thermistors + potentiometers)
  |
  +-> TAS (Topology Agnostic Structure) -- complete converter designs
        references PEAS components (inline or by path)
@@ -494,6 +515,9 @@ All values use SI base units:
 | Capacitance | Farads | `3.2e-10` = 320 pF |
 | Temperature | Celsius | `70` = 70 C |
 | Dimensions | Meters | `0.0016` = 1.6 mm |
+| Rotary travel | **Degrees** | `300` = 300 deg -- the one documented unit exception (`potentiometer.mechanical.actuation` `rotary` branch); the `linear` branch uses metres |
+| Turns | Dimensionless | `25` = 25-turn trimmer |
+| Wiper position | Fraction | `0.5` = mid-travel |
 | tcr1 (SPICE) | 1/K | `100e-6` = 100 ppm/K |
 | tcr2 (SPICE) | 1/K^2 | Second-order TCR |
 
@@ -504,13 +528,14 @@ All values use SI base units:
 ```
 RAS/
 +-- schemas/
-|     +-- RAS.json          # Top-level: inputs + (resistor | varistor | thermistor) + outputs[]
+|     +-- RAS.json          # Top-level: inputs + (resistor | varistor | thermistor | potentiometer) + outputs[]
 |     +-- inputs.json       # Operating points + design requirements
 |     +-- inputs/
 |     |     +-- designRequirements.json   # deviceType-discriminated requirements
 |     +-- resistor.json     # Resistor component schema
 |     +-- varistor.json     # Varistor (MOV) component schema
 |     +-- thermistor.json   # Thermistor (NTC / PTC) component schema
+|     +-- potentiometer.json # Potentiometer / rheostat / trimmer component schema
 |     +-- outputs.json      # Computed results schema (7 sealed blocks)
 |     +-- utils.json        # RAS shared types (thermal, mechanical, deratingCurve)
 +-- data/
@@ -520,6 +545,8 @@ RAS/
 |     +-- 02_shunt_resistor_wsk2512.json   # Current sense shunt resistor
 |     +-- 03_varistor_b72214.json          # Metal-oxide disc varistor (MOV)
 |     +-- 04_thermistor_sl22.json          # NTC inrush current limiter
+|     +-- 05_potentiometer_3296w_trimmer.json   # 25-turn cermet trimmer
+|     +-- 06_potentiometer_te_citec_dual.json   # Dual-gang carbon panel potentiometer
 +-- docs/
       +-- schema.md         # Detailed field-by-field schema reference
 ```

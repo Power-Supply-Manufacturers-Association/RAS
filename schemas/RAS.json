@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://psma.com/ras/RAS.json",
     "title": "RAS",
-    "description": "Resistor-family Agnostic Structure (RAS). A document carries inputs, exactly one of {resistor, varistor, thermistor} (the field name is the discriminator), and outputs.",
+    "description": "Resistor-family Agnostic Structure (RAS). A document carries inputs, exactly one of {resistor, varistor, thermistor, potentiometer} (the field name is the discriminator), and outputs.",
     "type": "object",
     "additionalProperties": false,
     "properties": {
@@ -25,6 +25,11 @@
             "description": "Thermistor (NTC / PTC)",
             "title": "thermistor",
             "$ref": "./thermistor.json"
+        },
+        "potentiometer": {
+            "description": "Potentiometer / rheostat / trimmer (adjustable three-terminal divider)",
+            "title": "potentiometer",
+            "$ref": "./potentiometer.json"
         },
         "outputs": {
             "description": "Computed results per operating point. outputs[i] aligns positionally with inputs.operatingPoints[i].",
@@ -53,6 +58,11 @@
         {
             "required": [
                 "thermistor"
+            ]
+        },
+        {
+            "required": [
+                "potentiometer"
             ]
         }
     ]

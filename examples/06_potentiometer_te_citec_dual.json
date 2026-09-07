@@ -1,0 +1,102 @@
+{
+  "inputs": {
+    "operatingPoints": [
+      {
+        "name": "front-panel level control, wiper at mid-travel",
+        "conditions": {
+          "ambientTemperature": 25
+        },
+        "excitation": {
+          "frequency": 1000,
+          "voltage": {
+            "processed": {
+              "label": "sinusoidal",
+              "peak": 1.5,
+              "offset": 0
+            }
+          },
+          "current": {
+            "processed": {
+              "label": "sinusoidal",
+              "peak": 0.0003,
+              "offset": 0
+            }
+          }
+        }
+      }
+    ],
+    "designRequirements": {
+      "name": "stereo front-panel level control",
+      "deviceType": "potentiometer",
+      "totalResistance": {
+        "nominal": 10000
+      },
+      "powerRating": 0.25,
+      "wiperPosition": {
+        "minimum": 0,
+        "nominal": 0.7,
+        "maximum": 1
+      },
+      "gangs": 2,
+      "role": "userControl",
+      "allowedTechnologies": [
+        "carbonComposition",
+        "carbonFilm"
+      ]
+    }
+  },
+  "potentiometer": {
+    "manufacturerInfo": {
+      "name": "TE Connectivity",
+      "reference": "1624182-2",
+      "status": "production",
+      "family": "Citec",
+      "description": "10K ohm, Carbon, 20 %, .4 W, Terminates To Wire, Panel Mount, 25.2 x 20.4 mm, Dual, Side Adjustment, 6.35 x 50 mm Shaft, Right Angle, Citec 23",
+      "datasheetInfo": {
+        "part": {
+          "partNumber": "1624182-2",
+          "series": "Citec",
+          "case": "Citec 23",
+          "technology": "carbonComposition",
+          "adjustmentAccess": "userAdjustable",
+          "matchcodeDescription": "10 kOhm dual-gang carbon panel-mount rotary potentiometer, 6.35 x 50 mm shaft"
+        },
+        "electrical": {
+          "totalResistance": {
+            "nominal": 10000
+          },
+          "resistanceTolerance": 0.2,
+          "powerRating": 0.4,
+          "gangs": 2
+        },
+        "mechanical": {
+          "case": "Citec 23",
+          "assemblyType": "flyingLead",
+          "length": {
+            "nominal": 0.0252
+          },
+          "width": {
+            "nominal": 0.0204
+          },
+          "mounting": "panel",
+          "adjustmentSide": "side",
+          "terminalOrientation": "rightAngle",
+          "shaft": {
+            "diameter": {
+              "nominal": 0.00635
+            },
+            "length": {
+              "nominal": 0.05
+            }
+          },
+          "actuation": {
+            "type": "rotary"
+          }
+        }
+      }
+    }
+  },
+  "outputs": [
+    {}
+  ]
+}

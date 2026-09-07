@@ -1,0 +1,573 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://psma.com/ras/potentiometer.json",
+    "$comment": "SPDX-License-Identifier: MIT",
+    "title": "potentiometer",
+    "description": "Potentiometer / rheostat / trimmer component data — an ADJUSTABLE three-terminal resistive divider. A wiper splits one resistive track of constant total resistance into two sections whose values sum to totalResistance; where the wiper sits is a design-time free variable, not a datasheet fact. It is a separate RAS member and not a `resistor` because a potentiometer SATISFIES every field the fixed-resistor electrical block requires (resistance, tolerance, powerRating), so filing one as a resistor validates SILENTLY and quietly becomes wrong — nothing would record that the part is adjustable, has a third terminal, or has a taper. `resistance` deliberately does not exist here: the analogous field is `totalResistance`, so a fixed-resistor electrical block cannot be re-labelled into this schema. The presence of the 'potentiometer' field at the top level of an RAS document discriminates the device type — there is no deviceType property. ANGULAR QUANTITIES (mechanicalTravel, electricalTravel) ARE IN DEGREES, not radians — the documented unit exception for this schema; every other quantity is SI base (Ohm, W, V, A, metre, Celsius for temperatures, as elsewhere in RAS).",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "manufacturerInfo": {
+            "title": "potentiometerManufacturerInfo",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/name"
+                },
+                "reference": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/reference"
+                },
+                "status": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/status"
+                },
+                "description": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/description"
+                },
+                "orderCode": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/orderCode"
+                },
+                "datasheetUrl": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/datasheetUrl"
+                },
+                "spiceModel": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/spiceModel"
+                },
+                "family": {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/manufacturerInfo/properties/family"
+                },
+                "datasheetInfo": {
+                    "$ref": "#/$defs/datasheetInfo"
+                }
+            },
+            "required": [
+                "name",
+                "datasheetInfo"
+            ]
+        },
+        "distributorsInfo": {
+            "description": "Where to buy this component",
+            "type": "array",
+            "items": {
+                "$ref": "https://psma.com/peas/utils.json#/$defs/distributorInfo"
+            }
+        }
+    },
+    "anyOf": [
+        {
+            "description": "A sourced part: carries its manufacturer + datasheet.",
+            "required": [
+                "manufacturerInfo"
+            ]
+        },
+        {
+            "description": "A pre-sourcing seed: an empty potentiometer object whose requirements live in the enclosing PEAS document's inputs.designRequirements (family-wide seed convention).",
+            "maxProperties": 0
+        }
+    ],
+    "$defs": {
+        "technology": {
+            "title": "potentiometerTechnology",
+            "description": "Resistive-element material of the track. 'cermet' — ceramic-metal thick film, the standard trimmer material. 'carbonComposition' / 'carbonFilm' — moulded or printed carbon, the commodity rotary material. 'conductivePlastic' — polymer track, long life and low noise. 'wirewound' — resistance wire on a former; high power, stepwise (finite resolution). 'thickFilm' / 'thinFilm' — printed or sputtered film on a substrate.",
+            "type": "string",
+            "enum": [
+                "cermet",
+                "carbonComposition",
+                "carbonFilm",
+                "conductivePlastic",
+                "wirewound",
+                "thickFilm",
+                "thinFilm"
+            ]
+        },
+        "taperLaw": {
+            "title": "potentiometerTaperLaw",
+            "description": "Vocabulary of taper laws — how resistance divides between the two track sections as the wiper travels. Referenced by the pinned const in each branch of #/$defs/taper and by the design-requirements side, so the two cannot drift.",
+            "type": "string",
+            "enum": [
+                "linear",
+                "logarithmic",
+                "sShaped",
+                "custom"
+            ]
+        },
+        "taper": {
+            "title": "potentiometerTaper",
+            "description": "The law relating wiper position to the resistance split. A CLOSED oneOf discriminated by a pinned `law` const: each branch fixes its own law value, so a document lands in exactly one branch and cannot be silently misclassified. Absent means the taper has not been sourced yet — it is NOT an assertion of linearity.",
+            "oneOf": [
+                {
+                    "title": "linearTaper",
+                    "description": "Resistance is proportional to wiper position: R_cw = position x totalResistance.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "law": {
+                            "$ref": "#/$defs/taperLaw",
+                            "const": "linear"
+                        }
+                    },
+                    "required": [
+                        "law"
+                    ]
+                },
+                {
+                    "title": "logarithmicTaper",
+                    "description": "Resistance follows an approximately exponential law — the audio/volume taper. `sense` is REQUIRED because the two senses are opposite curves that share the word 'log' on datasheets: getting it wrong inverts the control.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "law": {
+                            "$ref": "#/$defs/taperLaw",
+                            "const": "logarithmic"
+                        },
+                        "sense": {
+                            "description": "'log' — the standard audio (A) taper: resistance rises slowly over the first part of travel then steeply. 'antiLog' — the reverse-audio (C) taper: steeply first, then slowly.",
+                            "type": "string",
+                            "enum": [
+                                "log",
+                                "antiLog"
+                            ]
+                        },
+                        "exponent": {
+                            "description": "Optional shape exponent n of the fitted power law R_cw/totalResistance = position^n (dimensionless). n > 1 gives a log sense, n < 1 an antiLog one.",
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        }
+                    },
+                    "required": [
+                        "law",
+                        "sense"
+                    ]
+                },
+                {
+                    "title": "sShapedTaper",
+                    "description": "S-law / W-taper: two mirrored log segments meeting at the centre — fine control at both ends, used for balance and pan controls.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "law": {
+                            "$ref": "#/$defs/taperLaw",
+                            "const": "sShaped"
+                        },
+                        "centreResistanceFraction": {
+                            "description": "Fraction of totalResistance present between the wiper and the counter-clockwise end at mid-travel (dimensionless, 0..1; 0.5 for a symmetric S).",
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        }
+                    },
+                    "required": [
+                        "law"
+                    ]
+                },
+                {
+                    "title": "customTaper",
+                    "description": "Any law the three named ones do not cover, given as measured data. `curve` is REQUIRED — 'custom' without the curve says nothing.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "law": {
+                            "$ref": "#/$defs/taperLaw",
+                            "const": "custom"
+                        },
+                        "curve": {
+                            "description": "Wiper position (x, dimensionless 0..1 of electrical travel) versus resistance fraction R_cw/totalResistance (y, dimensionless 0..1).",
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/curve"
+                        }
+                    },
+                    "required": [
+                        "law",
+                        "curve"
+                    ]
+                }
+            ]
+        },
+        "wiper": {
+            "title": "potentiometerWiper",
+            "description": "The moving contact — the terminal a fixed resistor does not have. Everything here is a property of the contact itself, not of the track.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "resistance": {
+                    "description": "Wiper contact resistance, in Ohm.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "maximumCurrent": {
+                    "description": "Maximum continuous current through the wiper terminal, in A. Usually far below the track's own current capability — the rheostat-connection limit.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "contactResistanceVariation": {
+                    "description": "Contact resistance variation (CRV) as a fraction of totalResistance (0.03 = 3%) — the noise spec of a moving contact.",
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "actuation": {
+            "title": "potentiometerActuation",
+            "description": "How the wiper is moved. A CLOSED oneOf discriminated by a pinned `type` const, because the quantities are not interchangeable: a rotary part has travel in DEGREES and a turns count, a slide part has travel in METRES and no turns at all.",
+            "oneOf": [
+                {
+                    "title": "rotaryActuation",
+                    "description": "Wiper driven by a rotating shaft or screw.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "type": {
+                            "const": "rotary"
+                        },
+                        "turns": {
+                            "description": "Number of shaft turns from end stop to end stop (dimensionless). 1 for an ordinary single-turn control, 0.75 for a 270-degree trimmer, 10 for a multiturn trimmer. Equivalent to mechanicalTravel / 360.",
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        },
+                        "mechanicalTravel": {
+                            "description": "Total shaft rotation between end stops, IN DEGREES (unit exception — see the schema description).",
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        },
+                        "electricalTravel": {
+                            "description": "Rotation over which the wiper is actually on the resistive track, IN DEGREES (unit exception). Always <= mechanicalTravel; the difference is the dead band at the ends.",
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        },
+                        "detents": {
+                            "description": "Number of click detent positions over the travel (dimensionless). Absent means a smooth, detentless control.",
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "endStop": {
+                            "description": "'hardStop' — mechanical stops at both ends. 'continuous' — the shaft rotates without limit. 'clutched' — a slip clutch protects the element past the ends (common on multiturn trimmers).",
+                            "type": "string",
+                            "enum": [
+                                "hardStop",
+                                "continuous",
+                                "clutched"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                },
+                {
+                    "title": "linearActuation",
+                    "description": "Wiper driven along a straight track — slide / fader / linear-motion position sensor.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "type": {
+                            "const": "linear"
+                        },
+                        "mechanicalTravel": {
+                            "description": "Total slider travel between end stops, in metres.",
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        },
+                        "electricalTravel": {
+                            "description": "Travel over which the wiper is on the resistive track, in metres. Always <= mechanicalTravel.",
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        },
+                        "detents": {
+                            "description": "Number of click detent positions over the travel (dimensionless).",
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                }
+            ]
+        },
+        "shaft": {
+            "title": "potentiometerShaft",
+            "description": "Shaft / adjuster geometry. Present on every panel-mount and most board-mount rotary parts.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "diameter": {
+                    "description": "Shaft diameter, in metres (6.35e-3 for a quarter-inch shaft).",
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
+                },
+                "length": {
+                    "description": "Shaft length beyond the bushing, in metres.",
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
+                },
+                "style": {
+                    "description": "Shaft end form. 'screwdriverSlot' covers the slotted head of a trimmer with no shaft proper.",
+                    "type": "string",
+                    "enum": [
+                        "round",
+                        "flatted",
+                        "knurled",
+                        "splined",
+                        "slotted",
+                        "screwdriverSlot",
+                        "hex"
+                    ]
+                },
+                "material": {
+                    "description": "Shaft material as named on the datasheet (e.g. 'brass', 'stainless steel', 'plastic').",
+                    "type": "string"
+                }
+            }
+        },
+        "datasheetInfo": {
+            "title": "potentiometerDatasheetInfo",
+            "description": "All information extracted from the potentiometer datasheet.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "part": {
+                    "$ref": "#/$defs/part"
+                },
+                "electrical": {
+                    "$ref": "#/$defs/electrical"
+                },
+                "thermal": {
+                    "$ref": "./utils.json#/$defs/thermal"
+                },
+                "mechanical": {
+                    "$ref": "#/$defs/mechanical"
+                },
+                "modelParams": {
+                    "$ref": "#/$defs/modelParams"
+                },
+                "factors": {
+                    "$ref": "#/$defs/factors"
+                },
+                "provenance": {
+                    "description": "Data-provenance trail (see provenance).",
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/provenance"
+                }
+            },
+            "required": [
+                "part",
+                "electrical"
+            ]
+        },
+        "part": {
+            "title": "potentiometerPart",
+            "description": "Basic potentiometer part identification. Extends the PEAS part base by allOf and is sealed with unevaluatedProperties:false (the sanctioned RAS composition idiom), so the base's partNumber / series / case / description are inherited rather than re-declared.",
+            "allOf": [
+                {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/datasheetInfoPartBase"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "technology": {
+                            "$ref": "#/$defs/technology"
+                        },
+                        "adjustmentAccess": {
+                            "description": "Who is expected to turn it. 'userAdjustable' — a front-panel control turned in service. 'trimmer' — set once at manufacture or calibration ('set-and-forget'), typically screwdriver-adjusted.",
+                            "type": "string",
+                            "enum": [
+                                "userAdjustable",
+                                "trimmer"
+                            ]
+                        },
+                        "matchcodeDescription": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ],
+            "unevaluatedProperties": false,
+            "required": [
+                "technology"
+            ]
+        },
+        "electrical": {
+            "title": "potentiometerElectrical",
+            "description": "Potentiometer electrical characteristics. The headline value is `totalResistance` — the CONSTANT sum of the two track sections either side of the wiper — deliberately NOT named `resistance`, so a fixed-resistor electrical block cannot be renamed into a potentiometer without someone noticing.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "totalResistance": {
+                    "description": "End-to-end resistance of the track, in Ohm. The two wiper-split sections sum to this value at every wiper position: R_cw + R_ccw = totalResistance.",
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"
+                },
+                "resistanceTolerance": {
+                    "description": "Tolerance on totalResistance as a fraction (0.2 = +/-20%). Potentiometer tolerances are wide because the value is adjusted, not selected.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "powerRating": {
+                    "description": "Maximum power the whole track may dissipate at the reference temperature, in W. In a rheostat connection only the in-circuit fraction of the track carries current, so the usable rating scales down with wiper position.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "powerRatingTemperature": {
+                    "description": "Reference temperature for powerRating, in Celsius.",
+                    "type": "number"
+                },
+                "temperatureCoefficient": {
+                    "description": "Temperature coefficient of the track resistance, in ppm/K.",
+                    "type": "number"
+                },
+                "maximumWorkingVoltage": {
+                    "description": "Maximum continuous voltage across the full track, in V.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "insulationResistance": {
+                    "description": "Insulation resistance between the element and the case / shaft, in Ohm.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "taper": {
+                    "description": "How the resistance divides as the wiper moves (see potentiometerTaper).",
+                    "$ref": "#/$defs/taper"
+                },
+                "wiper": {
+                    "description": "Properties of the moving contact (see potentiometerWiper).",
+                    "$ref": "#/$defs/wiper"
+                },
+                "endResistance": {
+                    "description": "Residual resistance between the wiper and the nearer end terminal at full travel, in Ohm — never zero on a real part.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "independentLinearity": {
+                    "description": "Maximum departure of the measured output from the ideal taper, as a fraction of totalResistance (0.005 = +/-0.5%). The conformity spec of a position sensor.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "resolution": {
+                    "description": "Smallest achievable resistance step as a fraction of totalResistance. Meaningful for wirewound tracks, which step turn by turn; continuous-track parts have no finite resolution and omit this.",
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "gangs": {
+                    "description": "Number of independent resistive sections operated by one actuator (dimensionless). 1 = single, 2 = dual (stereo) — the TE Citec catalogue carries both. Each gang has its own totalResistance and taper; this schema describes them as identical, which is what ganged datasheets specify.",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "gangTracking": {
+                    "description": "Worst-case mismatch between gangs over the electrical travel, as a fraction (0.03 = 3 %, roughly 0.26 dB). Only meaningful when gangs > 1.",
+                    "type": "number",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "totalResistance"
+            ]
+        },
+        "mechanical": {
+            "title": "potentiometerMechanical",
+            "description": "Mechanical specs — extends the PEAS mechanical base with the adjuster mechanics a fixed resistor has no room for (shaft, mounting, adjustment side, actuation). It composes the PEAS base directly rather than RAS utils#/$defs/mechanical because that def is SEALED and a sealed subschema cannot be extended; `case`, `pinout` and `landPattern` are therefore re-referenced here (they are $refs to the one PEAS definition, not copies of it).",
+            "allOf": [
+                {
+                    "$ref": "https://psma.com/peas/utils.json#/$defs/datasheetInfoMechanical"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "case": {
+                            "description": "Package code (e.g. '3296W', '16 mm', 'Citec 23').",
+                            "type": "string"
+                        },
+                        "pinout": {
+                            "description": "Per-terminal function map (shared PEAS type). Real for potentiometers: the three terminals are not interchangeable (clockwise end / wiper / counter-clockwise end), and a dual-gang part has six.",
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/pinout"
+                        },
+                        "landPattern": {
+                            "description": "Manufacturer-recommended PCB land pattern (shared PEAS type).",
+                            "$ref": "https://psma.com/peas/utils.json#/$defs/landPattern"
+                        },
+                        "mounting": {
+                            "description": "How the body is held. 'panel' — bushing through a panel cut-out. 'board' — mounted on the PCB. 'bushing' — threaded bushing without a panel. 'chassis' — bracket or chassis fixing. 'surfaceMount' — SMD trimmer.",
+                            "type": "string",
+                            "enum": [
+                                "panel",
+                                "board",
+                                "bushing",
+                                "chassis",
+                                "surfaceMount"
+                            ]
+                        },
+                        "adjustmentSide": {
+                            "description": "Face of the body the adjuster is reached from.",
+                            "type": "string",
+                            "enum": [
+                                "top",
+                                "side",
+                                "bottom",
+                                "front",
+                                "rear"
+                            ]
+                        },
+                        "terminalOrientation": {
+                            "description": "Orientation of the terminals relative to the mounting plane: 'vertical' (axis normal to the board) or 'rightAngle' (axis in the board plane).",
+                            "type": "string",
+                            "enum": [
+                                "vertical",
+                                "rightAngle"
+                            ]
+                        },
+                        "shaft": {
+                            "description": "Shaft / adjuster geometry (see potentiometerShaft).",
+                            "$ref": "#/$defs/shaft"
+                        },
+                        "actuation": {
+                            "description": "How the wiper is moved, and over how much travel (see potentiometerActuation).",
+                            "$ref": "#/$defs/actuation"
+                        },
+                        "rotationalLife": {
+                            "description": "Rated mechanical life, in full actuation cycles (dimensionless count).",
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    }
+                }
+            ],
+            "unevaluatedProperties": false
+        },
+        "modelParams": {
+            "title": "potentiometerModelParams",
+            "description": "SPICE model parameters. A potentiometer is emitted as two resistors sharing a wiper node; `wiperPosition` is the DESIGN-TIME FREE VARIABLE that splits rTotal between them, and is a choice made by the design, not a property read off the datasheet.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "rTotal": {
+                    "description": "End-to-end track resistance, in Ohm.",
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "wiperPosition": {
+                    "description": "Fractional wiper position (dimensionless, 0..1) measured from the counter-clockwise / low end. The clockwise section is taper(wiperPosition) x rTotal and the counter-clockwise section is the remainder; the two always sum to rTotal.",
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "rWiper": {
+                    "description": "Series wiper contact resistance, in Ohm.",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "taperExponent": {
+                    "description": "Exponent n used to evaluate the taper in the model: R_cw/rTotal = wiperPosition^n. n = 1 reproduces a linear taper.",
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                }
+            }
+        },
+        "factors": {
+            "title": "potentiometerFactors",
+            "description": "Derating factors as functions of temperature.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "powerDerating": {
+                    "description": "Power derating curve for the whole track.",
+                    "$ref": "./utils.json#/$defs/deratingCurve"
+                }
+            }
+        }
+    }
+}

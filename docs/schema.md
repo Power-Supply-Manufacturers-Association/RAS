@@ -1,22 +1,23 @@
 # RAS Schema Reference
 
-Complete field-by-field documentation for the Resistor-family Agnostic Structure (fixed resistors, varistors **and** thermistors).
+Complete field-by-field documentation for the Resistor-family Agnostic Structure (fixed resistors, varistors, thermistors **and** potentiometers).
 
 ---
 
 ## Top-Level: RAS.json
 
-The root document wraps exactly one component with its design context. The field name (`resistor`, `varistor` or `thermistor`) is the device-type discriminator — there is no `deviceType` property on the component itself.
+The root document wraps exactly one component with its design context. The field name (`resistor`, `varistor`, `thermistor` or `potentiometer`) is the device-type discriminator — there is no `deviceType` property on the component itself.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `inputs` | [inputs](#inputs-inputsjson) | Yes | Design requirements and operating points for this component |
-| `resistor` | [resistor](#resistorjson) | Exactly one of the three | Fixed resistor component data |
-| `varistor` | [varistor](#varistorjson) | Exactly one of the three | Varistor / MOV component data |
-| `thermistor` | [thermistor](#thermistorjson) | Exactly one of the three | Thermistor (NTC / PTC) component data |
+| `resistor` | [resistor](#resistorjson) | Exactly one of the four | Fixed resistor component data |
+| `varistor` | [varistor](#varistorjson) | Exactly one of the four | Varistor / MOV component data |
+| `thermistor` | [thermistor](#thermistorjson) | Exactly one of the four | Thermistor (NTC / PTC) component data |
+| `potentiometer` | [potentiometer](#potentiometerjson) | Exactly one of the four | Potentiometer / rheostat / trimmer component data |
 | `outputs` | array of [outputs](#outputs-outputsjson) | Yes | Computed results per operating point; `outputs[i]` aligns positionally with `inputs.operatingPoints[i]` |
 
-A top-level `oneOf` enforces that exactly one of `resistor` / `varistor` / `thermistor` is present. The root object is closed (`additionalProperties: false`).
+A top-level `oneOf` enforces that exactly one of `resistor` / `varistor` / `thermistor` / `potentiometer` is present. The root object is closed (`additionalProperties: false`).
 
 **Schema ID**: `https://psma.com/ras/RAS.json`
 
@@ -33,13 +34,13 @@ Mirrors the MAS / CAS inputs structure. Both fields required; closed object.
 
 ### designRequirements (inputs/designRequirements.json)
 
-An `allOf` extension of the PEAS `designRequirementsBase` mixin, closed with top-level `unevaluatedProperties: false`. A **`deviceType` discriminator** (required, `"resistor"`, `"varistor"` or `"thermistor"`) drives a per-type `oneOf` — mirrors the SAS pattern.
+An `allOf` extension of the PEAS `designRequirementsBase` mixin, closed with top-level `unevaluatedProperties: false`. A **`deviceType` discriminator** (required, `"resistor"`, `"varistor"`, `"thermistor"` or `"potentiometer"`) drives a per-type `oneOf` — mirrors the SAS pattern.
 
 Fields common to all device types:
 
 | Field | Type | Required | Unit | Description |
 |-------|------|----------|------|-------------|
-| `deviceType` | string (enum) | Yes | — | `resistor`, `varistor` or `thermistor`; aligns with the RAS top-level field name |
+| `deviceType` | string (enum) | Yes | — | `resistor`, `varistor`, `thermistor` or `potentiometer`; aligns with the RAS top-level field name |
 | `maximumWorkingVoltage` | number ≥ 0 | No | V | Maximum DC working voltage allowed across the component |
 | `maximumOverloadVoltage` | number ≥ 0 | No | V | Maximum short-pulse / overload voltage |
 | `application` | string (enum) | No | — | PEAS `resistorApplication`: `power`, `precision`, `currentSense`, `pulseHandling`, `general` |
@@ -59,7 +60,7 @@ Inherited from PEAS `designRequirementsBase` (all optional): `name`, `market`, `
 | `minimumPulseEnergy` | number ≥ 0 | J | Minimum pulse-energy withstand requirement |
 | `maximumEsl` | number ≥ 0 | H | Maximum equivalent series inductance |
 | `role` | string (enum) | — | `currentSense`, `gate`, `snubber`, `damping`, `bleed`, `preCharge`, `inrush`, `divider`, `feedback`, `termination`, `pullUp`, `pullDown`, `fusible` |
-| `allowedTechnologies` | array (enum items) | — | Subset of the resistor [technology enum](#technology-enum-values) (same 11 values). Absent = all allowed. |
+| `allowedTechnologies` | array (enum items) | — | Subset of the resistor [technology enum](#technology-enum-values) (same 12 values). Absent = all allowed. |
 
 **Varistor branch** (`deviceType: "varistor"`) — **required: `ratedContinuousVoltage`**, plus **at least one of `minimumEnergyAbsorption` / `minimumPeakSurgeCurrent`** (`anyOf`; Joule-rated disc varistors vs. multilayer/ESD varistors that publish no Joule rating):
 
@@ -85,6 +86,21 @@ Inherited from PEAS `designRequirementsBase` (all optional): `name`, `market`, `
 | `switchTemperature` | [dimensionWithTolerance](#dimensionwithtolerance) | °C | Required PTC switch / reference temperature |
 | `role` | string (enum) | — | `inrushLimiting`, `temperatureSensing`, `temperatureCompensation`, `overtemperatureProtection` |
 | `allowedTechnologies` | array (enum items) | — | Subset of `ntc`, `ptc` — items `$ref` the part-side anchor `thermistor.json#/$defs/technology`, so the two enums cannot drift |
+
+**Potentiometer branch** (`deviceType: "potentiometer"`) — **required: `totalResistance`**:
+
+| Field | Type | Unit | Description |
+|-------|------|------|-------------|
+| `totalResistance` | [dimensionWithTolerance](#dimensionwithtolerance) | Ohm | Required end-to-end track resistance (required). Named to match the part side, so a `resistance` requirement cannot be mistaken for a potentiometer one |
+| `powerRating` | number ≥ 0 | W | Required continuous power dissipation rating of the whole track |
+| `wiperPosition` | [dimensionWithTolerance](#dimensionwithtolerance) | fraction | Where the design expects the wiper to sit, `0..1` of electrical travel from the low end. **The design-time free variable** — give it as a range when the design needs adjustment headroom |
+| `taperLaw` | string (enum) | — | Required taper law; `$ref`s `potentiometer.json#/$defs/taperLaw` (`linear`, `logarithmic`, `sShaped`, `custom`) so the requirement and part vocabularies cannot drift |
+| `minimumTurns` | number > 0 | — | Required minimum actuator turns end-to-end, where setting resolution matters |
+| `gangs` | integer ≥ 1 | — | Required number of independent sections on one actuator (`1` single, `2` dual) |
+| `maximumTemperatureCoefficient` | number ≥ 0 | ppm/K | Maximum acceptable track temperature coefficient |
+| `maximumWiperResistance` | number ≥ 0 | Ohm | Maximum acceptable wiper contact resistance |
+| `role` | string (enum) | — | `trimming`, `voltageDivider`, `rheostat`, `feedbackAdjust`, `referenceAdjust`, `userControl`, `positionSensing` |
+| `allowedTechnologies` | array (enum items) | — | Subset of the [potentiometer technology enum](#potentiometer-technology-enum-values) — items `$ref` the part-side anchor `potentiometer.json#/$defs/technology`, so the two cannot drift |
 
 ---
 
@@ -152,6 +168,7 @@ Basic part identification — an `allOf` extension of PEAS `datasheetInfoPartBas
 |-------|-------------|
 | `thinFilm` | Thin film -- sputtered metal alloy on ceramic substrate. Low TCR, tight tolerance. |
 | `thickFilm` | Thick film -- printed resistive paste on ceramic. General purpose, low cost. |
+| `cermet` | Cermet -- ceramic-metal thick film fired onto a ceramic substrate. Stable, high-voltage-capable, and the standard element of resistor networks and trimmers. Added 2026-09. |
 | `metalFilm` | Metal film -- vacuum-deposited metal film, typically on axial leaded parts. Low noise, good stability. |
 | `metalOxide` | Metal oxide -- metal oxide film on ceramic. High voltage, flame-proof. |
 | `wirewound` | Wirewound -- resistance wire wound on a core. High power, precise, but inductive. |
@@ -184,7 +201,7 @@ Electrical characteristics of the resistor. **Required: `resistance`, `tolerance
 
 ## thermal
 
-Thermal characteristics, shared by resistor, varistor and thermistor (`utils.json#/$defs/thermal`) — an `allOf` extension of PEAS `datasheetInfoThermal`. All fields optional.
+Thermal characteristics, shared by resistor, varistor, thermistor and potentiometer (`utils.json#/$defs/thermal`) — an `allOf` extension of PEAS `datasheetInfoThermal`. All fields optional.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -195,7 +212,7 @@ Thermal characteristics, shared by resistor, varistor and thermistor (`utils.jso
 
 ## mechanical
 
-Mechanical dimensions and package information, shared by resistor, varistor and thermistor (`utils.json#/$defs/mechanical`) — an `allOf` extension of PEAS `datasheetInfoMechanical`. The object is **flat** (no nested `dimensions`/`shape` sub-objects) and all fields are optional.
+Mechanical dimensions and package information, shared by resistor, varistor and thermistor (`utils.json#/$defs/mechanical`) — an `allOf` extension of PEAS `datasheetInfoMechanical`. The object is **flat** (no nested `dimensions`/`shape` sub-objects) and all fields are optional. **Potentiometers do not use this `$def`**: they need shaft, mounting and actuation mechanics, and this one is sealed, so `potentiometer.json` composes the PEAS base directly — see [potentiometer mechanical](#potentiometer-mechanical).
 
 - **`pinout`** / **`landPattern`** — optional, both the **shared PEAS types** (`https://psma.com/peas/utils.json#/$defs/pinout` and `#/$defs/landPattern`, hoisted 2026-08): per-terminal `(pin, name, function)` map using the family-wide `pinFunction` vocabulary, and the manufacturer-recommended PCB land pattern (pad centres/sizes/drills). No module defines its own variant of these types — additions to the vocabulary go to PEAS.
 
@@ -349,6 +366,171 @@ Describes a thermistor (NTC or PTC) — a temperature-dependent resistor for inr
 
 ---
 
+## potentiometer.json
+
+Describes a **potentiometer** — an adjustable three-terminal resistive divider (also covering rheostats and trimmers). Same outer shape as the other three members: a closed object with `manufacturerInfo` (required `name` + `datasheetInfo`) and `distributorsInfo`, plus the same `anyOf` allowing an **empty pre-sourcing seed** (`{}`).
+
+### Why it is a separate member and not a `resistor`
+
+A potentiometer **satisfies every field the fixed-resistor `electrical` block requires** — `resistance`, `tolerance`, `powerRating`. Filing one as a `resistor` therefore does **not** fail; it validates *silently* and quietly becomes wrong: nothing in the record would then say the part is adjustable, has a third terminal, has a taper, or has a wiper with its own current limit and contact resistance. `thermistor` is the precedent for splitting a member out of `resistor`, and a thermistor differs from a fixed resistor *less* than a potentiometer does.
+
+The separation is enforced by naming, not by convention: the headline value is **`totalResistance`**, and `resistance` **does not exist** in `potentiometer.electrical`. A fixed-resistor electrical block therefore fails twice over — `resistance` is an unknown property, and `totalResistance` is missing.
+
+### The model: two resistances summing to a constant
+
+A potentiometer is one resistive track of constant end-to-end resistance, split by the wiper into two sections:
+
+```
+R_cw + R_ccw = totalResistance      at every wiper position
+R_cw         = taper(wiperPosition) * totalResistance
+```
+
+`wiperPosition` (dimensionless, `0..1`) is the **design-time free variable** — a choice the design makes, not a fact read off a datasheet. It therefore lives on the *requirement* side (`designRequirements.wiperPosition`) and in `modelParams`, never in the part's `electrical` block.
+
+### Units
+
+All SI, with **one documented exception**: `actuation.mechanicalTravel` and `actuation.electricalTravel` are **in degrees** for a rotary part (they are in **metres** for a linear/slide part, where the pinned `type` const tells you which). Everything else is Ohm, W, V, A, metre, Celsius, or a dimensionless fraction, as elsewhere in RAS.
+
+### potentiometer datasheetInfo
+
+**Required: `part`, `electrical`.**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `part` | object | Yes | Part identification — PEAS part base plus the potentiometer technology enum |
+| `electrical` | object | Yes | Track, taper and wiper characteristics |
+| `thermal` | [thermal](#thermal) | No | Shared RAS thermal section |
+| `mechanical` | object | No | Potentiometer-specific mechanical section (shaft, mounting, actuation) |
+| `modelParams` | object | No | SPICE model parameters |
+| `factors` | object | No | Power derating curve |
+| `provenance` | array | No | Data-provenance trail |
+
+### potentiometer part
+
+**Required: `partNumber` (from the PEAS base), `technology`.** Composed as `allOf [ PEAS datasheetInfoPartBase, extension ]` sealed with top-level `unevaluatedProperties: false`, so `partNumber` / `series` / `case` / `description` are inherited rather than re-declared.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `technology` | string (enum) | Yes | Resistive-element material — see below |
+| `adjustmentAccess` | string (enum) | No | `userAdjustable` (a control turned in service) or `trimmer` (set once at manufacture/calibration) |
+| `matchcodeDescription` | string | No | Human-readable description of the part |
+
+#### potentiometer technology enum values
+
+A named `$def` (`potentiometer.json#/$defs/technology`) so requirement-side `allowedTechnologies` `$ref`s it and the two cannot drift.
+
+| Value | Description |
+|-------|-------------|
+| `cermet` | Ceramic-metal thick film — the standard trimmer material |
+| `carbonComposition` | Moulded carbon element — the commodity rotary material |
+| `carbonFilm` | Printed carbon film |
+| `conductivePlastic` | Polymer track — long life, low noise |
+| `wirewound` | Resistance wire on a former — high power, stepwise (finite `resolution`) |
+| `thickFilm` | Printed film on a substrate |
+| `thinFilm` | Sputtered film on a substrate |
+
+### potentiometer electrical
+
+**Required: `totalResistance`.** Optional fields are plain numbers (not nullable) — omit what the datasheet does not state, matching the rest of RAS.
+
+| Field | Type | Required | Unit | Description |
+|-------|------|----------|------|-------------|
+| `totalResistance` | [dimensionWithTolerance](#dimensionwithtolerance) | Yes | Ohm | End-to-end track resistance. The two wiper-split sections sum to this at every position |
+| `resistanceTolerance` | number ≥ 0 | No | fraction | Tolerance on `totalResistance` (`0.2` = ±20%) |
+| `powerRating` | number ≥ 0 | No | W | Power the whole track may dissipate at `powerRatingTemperature` |
+| `powerRatingTemperature` | number | No | °C | Reference temperature for `powerRating` |
+| `temperatureCoefficient` | number | No | ppm/K | Temperature coefficient of the track |
+| `maximumWorkingVoltage` | number ≥ 0 | No | V | Maximum continuous voltage across the full track |
+| `insulationResistance` | number ≥ 0 | No | Ohm | Element to case/shaft |
+| `taper` | [taper](#potentiometer-taper) | No | — | The resistance-division law. **Absent means not yet sourced — it is not an assertion of linearity** |
+| `wiper` | object | No | — | The moving contact — see below |
+| `endResistance` | number ≥ 0 | No | Ohm | Residual resistance wiper-to-end at full travel; never zero on a real part |
+| `independentLinearity` | number ≥ 0 | No | fraction | Maximum departure from the ideal taper (`0.005` = ±0.5%) |
+| `resolution` | number > 0 | No | fraction | Smallest resistance step. Wirewound tracks only; continuous tracks omit it |
+| `gangs` | integer ≥ 1 | No | — | Independent resistive sections on one actuator. `1` = single, `2` = dual |
+| `gangTracking` | number ≥ 0 | No | fraction | Worst-case mismatch between gangs (`0.03` ≈ 0.26 dB). Only meaningful when `gangs > 1` |
+
+#### wiper
+
+The terminal a fixed resistor does not have. Closed object.
+
+| Field | Type | Unit | Description |
+|-------|------|------|-------------|
+| `resistance` | number ≥ 0 | Ohm | Wiper contact resistance |
+| `maximumCurrent` | number ≥ 0 | A | Maximum continuous wiper-terminal current — the rheostat-connection limit, usually far below the track's own capability |
+| `contactResistanceVariation` | number ≥ 0 | fraction | CRV as a fraction of `totalResistance` — the noise spec of a moving contact |
+
+### potentiometer taper
+
+A **closed `oneOf` discriminated by a pinned `law` const**: every branch fixes its own `law` value, so a document lands in exactly one branch and cannot be silently misclassified. The `law` values are drawn from the named `$def` `potentiometer.json#/$defs/taperLaw`, which the requirement side also `$ref`s.
+
+| `law` | Additional fields | Description |
+|-------|-------------------|-------------|
+| `linear` | — | `R_cw = position * totalResistance` |
+| `logarithmic` | `sense` (**required**), `exponent` | Audio/volume taper. `sense` is `log` (standard audio "A": slow then steep) or `antiLog` (reverse-audio "C": steep then slow). **Required** because both curves are called "log" on datasheets and getting it wrong inverts the control. `exponent` is the optional fitted `n` in `R_cw/totalResistance = position^n` |
+| `sShaped` | `centreResistanceFraction` | S-law / W-taper: two mirrored log segments meeting at the centre — balance and pan controls |
+| `custom` | `curve` (**required**) | Any other law, as measured data: `x` = wiper position (`0..1`), `y` = `R_cw/totalResistance` (`0..1`). `custom` without the curve says nothing, so the curve is required |
+
+### potentiometer mechanical
+
+Extends the PEAS `datasheetInfoMechanical` base by `allOf`, sealed with top-level `unevaluatedProperties: false`, so it carries the base's `length` / `width` / `height` / `diameter` / `weight` / `shapeType` / `assemblyType` plus the fields below. It composes the PEAS base directly rather than the shared RAS `mechanical` because that `$def` is *sealed* and a sealed subschema cannot be extended; `case`, `pinout` and `landPattern` are re-referenced here (they are `$ref`s to the single PEAS definition, not copies of it).
+
+| Field | Type | Unit | Description |
+|-------|------|------|-------------|
+| `case` | string | — | Package code (`"3296W"`, `"16 mm"`, `"Citec 23"`) |
+| `pinout` | PEAS `pinout` | — | Per-terminal function map. Genuinely needed here: the three terminals are not interchangeable (CW end / wiper / CCW end), and a dual-gang part has six |
+| `landPattern` | PEAS `landPattern` | — | Recommended PCB land pattern |
+| `mounting` | string (enum) | — | `panel`, `board`, `bushing`, `chassis`, `surfaceMount` |
+| `adjustmentSide` | string (enum) | — | `top`, `side`, `bottom`, `front`, `rear` — the face the adjuster is reached from |
+| `terminalOrientation` | string (enum) | — | `vertical` (axis normal to the board) or `rightAngle` (axis in the board plane) |
+| `shaft` | object | — | Shaft geometry — see below |
+| `actuation` | [actuation](#potentiometer-actuation) | — | How the wiper moves, and over how much travel |
+| `rotationalLife` | integer ≥ 0 | cycles | Rated mechanical life in full actuation cycles |
+
+#### shaft
+
+| Field | Type | Unit | Description |
+|-------|------|------|-------------|
+| `diameter` | [dimensionWithTolerance](#dimensionwithtolerance) | m | Shaft diameter (`6.35e-3` for a quarter-inch shaft) |
+| `length` | [dimensionWithTolerance](#dimensionwithtolerance) | m | Shaft length beyond the bushing |
+| `style` | string (enum) | — | `round`, `flatted`, `knurled`, `splined`, `slotted`, `screwdriverSlot`, `hex` |
+| `material` | string | — | Shaft material as named on the datasheet |
+
+### potentiometer actuation
+
+A second **closed `oneOf` with a pinned `type` const**, because the quantities are not interchangeable: a rotary part has travel in **degrees** and a `turns` count; a linear (slide) part has travel in **metres** and no turns at all. Pinning the const is what stops a slide potentiometer acquiring a turns count.
+
+| `type` | Fields | Description |
+|--------|--------|-------------|
+| `rotary` | `turns`, `mechanicalTravel` (**degrees**), `electricalTravel` (**degrees**), `detents`, `endStop` | Shaft- or screw-driven. `turns` is dimensionless: `1` for an ordinary control, `0.75` for a 270° trimmer, `25` for a multiturn trimmer (= `mechanicalTravel / 360`). `endStop` is `hardStop`, `continuous` or `clutched` |
+| `linear` | `mechanicalTravel` (**metres**), `electricalTravel` (**metres**), `detents` | Slide / fader / linear-motion position sensor |
+
+`electricalTravel` ≤ `mechanicalTravel` in both branches; the difference is the dead band at the ends.
+
+### potentiometer modelParams
+
+A potentiometer is emitted as two resistors sharing a wiper node. Closed object.
+
+| Field | Type | Unit | Description |
+|-------|------|------|-------------|
+| `rTotal` | number > 0 | Ohm | End-to-end track resistance |
+| `wiperPosition` | number 0..1 | fraction | **The design-time free variable** — the split point, measured from the low/CCW end |
+| `rWiper` | number ≥ 0 | Ohm | Series wiper contact resistance |
+| `taperExponent` | number > 0 | — | Exponent `n` in `R_cw/rTotal = wiperPosition^n`; `n = 1` is linear |
+
+### potentiometer factors
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `powerDerating` | [deratingCurve](#deratingcurve) | Power derating curve for the whole track |
+
+### Worked examples
+
+- [`examples/05_potentiometer_3296w_trimmer.json`](../examples/05_potentiometer_3296w_trimmer.json) — a 10 kΩ 25-turn cermet trimmer: linear taper, rotary actuation with `turns`, clutched end stop, three-pin pinout, `modelParams` with the wiper at mid-travel.
+- [`examples/06_potentiometer_te_citec_dual.json`](../examples/06_potentiometer_te_citec_dual.json) — a real TE Citec **dual-gang** carbon panel potentiometer, showing the shape of the catalogue data as actually sourced: `gangs: 2`, panel mounting, side adjustment, right-angle terminals, 6.35 × 50 mm shaft, and **`taper` and `turns` deliberately absent** because TE's parametric data does not carry them. The schema models them because a potentiometer *has* them; a record omits them until they are sourced.
+
+---
+
 ## outputs (outputs.json)
 
 Computed results for **one operating point**; the top-level RAS document holds an **array** of these, aligned positionally with `inputs.operatingPoints`. Each of the 7 named blocks is independently optional; every block is an `allOf` over the PEAS `outputBase` provenance shell — `origin` (`manufacturer`/`measurement`/`simulation`) and `methodUsed` are **required** in every block — and is sealed with `unevaluatedProperties: false`.
@@ -404,7 +586,7 @@ An array of numeric values.
 
 ## Provenance (data-source trail)
 
-Every `datasheetInfo` (resistor, varistor and thermistor) carries an optional `provenance` array recording where its data
+Every `datasheetInfo` (resistor, varistor, thermistor and potentiometer) carries an optional `provenance` array recording where its data
 came from. Optional and closed, so records without it remain valid. Each entry:
 
 | field | meaning |
