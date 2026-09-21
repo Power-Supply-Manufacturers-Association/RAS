@@ -155,6 +155,7 @@ RAS.json                          # Top-level: inputs + (resistor | varistor | t
   |     |           +-- modelParams   # SPICE parameters
   |     |           +-- factors       # powerDerating curve
   |     +-- distributorsInfo          # Commercial data (PEAS distributorInfo)
+  |     +-- substitutesInfo           # Successors + second sources (PEAS substituteInfo)
   +-- varistor.json               # Varistor (MOV) component data — same outer shape
   |                               #   (+ viCurve; electrical requires varistorVoltage,
   |                               #    clampingVoltage, peakSurgeCurrent)
