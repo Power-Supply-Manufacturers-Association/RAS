@@ -25,6 +25,7 @@ add_custom_command(
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/resistor.json"
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/varistor.json"
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/thermistor.json"
+            -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/potentiometer.json"
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/inputs.json"
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/inputs/designRequirements.json"
             -S "${CMAKE_CURRENT_SOURCE_DIR}/schemas/outputs.json"
@@ -41,6 +42,8 @@ add_custom_command(
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/schemas/RAS.json"
             "${CMAKE_CURRENT_SOURCE_DIR}/schemas/resistor.json"
             "${CMAKE_CURRENT_SOURCE_DIR}/schemas/varistor.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/schemas/thermistor.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/schemas/potentiometer.json"
             "${CMAKE_CURRENT_SOURCE_DIR}/schemas/inputs/designRequirements.json"
     COMMENT "Generating RAS.hpp via quicktype"
     VERBATIM)
