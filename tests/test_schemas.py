@@ -456,3 +456,24 @@ def test_resistor_cermet_technology_accepted(ras_validator, resistor_doc):
 def test_design_requirements_resistor_allows_cermet(ras_validator, resistor_doc):
     resistor_doc["inputs"]["designRequirements"]["allowedTechnologies"] = ["cermet"]
     assert_valid(ras_validator, resistor_doc)
+
+
+# ---------------------------------------------------------------------------
+# varistor surgeWaveform is the shared PEAS enum (PEAS-RFC 0003)
+# ---------------------------------------------------------------------------
+
+def _varistor_electrical(doc):
+    return doc["varistor"]["manufacturerInfo"]["datasheetInfo"]["electrical"]
+
+
+@pytest.mark.parametrize("w", ["8/20", "10/350", "10/1000"])
+def test_varistor_surge_waveform_member_accepted(ras_validator, varistor_doc, w):
+    _varistor_electrical(varistor_doc)["surgeWaveform"] = w
+    assert_valid(ras_validator, varistor_doc)
+
+
+@pytest.mark.parametrize("w", ["8x20", "8/20us", "8/20 µs", "ISO 7637-2 pulse 5a", ""])
+def test_varistor_unknown_surge_waveform_rejected(ras_validator, varistor_doc, w):
+    _varistor_electrical(varistor_doc)["surgeWaveform"] = w
+    msgs = [e.message for e in ras_validator.iter_errors(varistor_doc)]
+    assert any("is not one of" in m for m in msgs), msgs

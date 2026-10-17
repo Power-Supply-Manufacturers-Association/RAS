@@ -316,7 +316,7 @@ Describes a varistor / MOV (Metal Oxide Varistor). Same outer shape as `resistor
 | `maxContinuousAcVoltage` | number ≥ 0 | No | V RMS | Maximum continuous AC working voltage |
 | `maxContinuousDcVoltage` | number ≥ 0 | No | V | Maximum continuous DC working voltage |
 | `clampingCurrent` | number ≥ 0 | No | A | Test current at which the clamping voltage is specified |
-| `surgeWaveform` | string | No | — | Waveform of the rated surge in 'rise/decay' microseconds (e.g. `"8/20"`) |
+| `surgeWaveform` | string enum ([PEAS `surgeWaveform`](https://psma.com/peas/utils.json#/$defs/surgeWaveform)) | No | — | Impulse the `peakSurgeCurrent` rating is stated at: one of `8/20`, `10/1000`, `10/350`, `2/10`, `5/320`, `10/700`, `10/560`, `9/720`, `10/160`, `TLP 100 ns` (each label's wave and standard are listed in PEAS `docs/architecture.md`). Free strings such as `8x20` are rejected. Absent = not stated (no default). |
 | `energyAbsorption` | number ≥ 0 | No | J | Maximum single-pulse energy absorption (10/1000 µs waveform). A power-/disc-MOV rating; **multilayer chip varistors** (e.g. TDK AVR) are specified by `peakSurgeCurrent` + `clampingVoltage` instead and typically publish no Joule rating — for those parts this field is absent. |
 | `capacitance` | number ≥ 0 | No | F | Typical capacitance at 1 kHz |
 | `leakageCurrent` | number ≥ 0 | No | A | DC leakage current at the maximum continuous voltage |
