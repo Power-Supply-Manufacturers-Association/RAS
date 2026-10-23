@@ -108,6 +108,11 @@ def potentiometer_dual_doc():
     return _load(EXAMPLES_DIR / "06_potentiometer_te_citec_dual.json")
 
 
+@pytest.fixture
+def ccr_doc():
+    return _load(EXAMPLES_DIR / "07_resistor_te_ccr2_10k.json")
+
+
 def assert_valid(validator, doc):
     errs = sorted(validator.iter_errors(doc), key=lambda e: list(e.path))
     assert not errs, "expected valid, got errors:\n" + "\n".join(
@@ -456,6 +461,45 @@ def test_resistor_cermet_technology_accepted(ras_validator, resistor_doc):
 def test_design_requirements_resistor_allows_cermet(ras_validator, resistor_doc):
     resistor_doc["inputs"]["designRequirements"]["allowedTechnologies"] = ["cermet"]
     assert_valid(ras_validator, resistor_doc)
+
+
+# ---------------------------------------------------------------------------
+# ceramicComposition in the fixed-resistor technology enum, and the enum
+# hoisted into one named $def that the requirement side $refs
+# ---------------------------------------------------------------------------
+
+def test_ccr_example_validates(ras_validator, ccr_doc):
+    assert_valid(ras_validator, ccr_doc)
+
+
+def test_resistor_ceramic_composition_technology_accepted(ras_validator, resistor_doc):
+    resistor_doc["resistor"]["manufacturerInfo"]["datasheetInfo"]["part"]["technology"] = "ceramicComposition"
+    assert_valid(ras_validator, resistor_doc)
+
+
+def test_design_requirements_resistor_allows_ceramic_composition(ras_validator, resistor_doc):
+    resistor_doc["inputs"]["designRequirements"]["allowedTechnologies"] = ["ceramicComposition"]
+    assert_valid(ras_validator, resistor_doc)
+
+
+def test_resistor_hyphenated_ceramic_composition_rejected(ras_validator, ccr_doc):
+    ccr_doc["resistor"]["manufacturerInfo"]["datasheetInfo"]["part"]["technology"] = "ceramic-composition"
+    assert_invalid(ras_validator, ccr_doc)
+
+
+def test_design_requirements_resistor_hyphenated_ceramic_composition_rejected(ras_validator, ccr_doc):
+    ccr_doc["inputs"]["designRequirements"]["allowedTechnologies"] = ["ceramic-composition"]
+    assert_invalid(ras_validator, ccr_doc)
+
+
+def test_resistor_technology_is_one_named_def():
+    resistor = _load(SCHEMA_DIR / "resistor.json")
+    assert "ceramicComposition" in resistor["$defs"]["technology"]["enum"]
+    text = json.dumps(resistor)
+    assert text.count('"carbonComposition"') == 1, "resistor technology enum must exist exactly once"
+    dr = json.dumps(_load(SCHEMA_DIR / "inputs" / "designRequirements.json"))
+    assert "https://psma.com/ras/resistor.json#/$defs/technology" in dr
+    assert '"bulkMetalFoil"' not in dr, "requirement side must $ref the anchor, not restate the enum"
 
 
 # ---------------------------------------------------------------------------

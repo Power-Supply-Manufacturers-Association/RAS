@@ -72,6 +72,26 @@
         }
     ],
     "$defs": {
+        "technology": {
+            "title": "resistorTechnology",
+            "description": "Resistive-element construction of a fixed resistor. Referenced by part.technology and by the design-requirements side (inputs/designRequirements allowedTechnologies), so the two cannot drift. The per-value meanings are tabulated in docs/schema.md.",
+            "type": "string",
+            "enum": [
+                "thinFilm",
+                "thickFilm",
+                "cermet",
+                "metalFilm",
+                "metalOxide",
+                "wirewound",
+                "carbonComposition",
+                "ceramicComposition",
+                "carbonFilm",
+                "metalFoil",
+                "bulkMetalFoil",
+                "currentSenseShunt",
+                "melf"
+            ]
+        },
         "datasheetInfo": {
             "title": "resistorDatasheetInfo",
             "description": "All information extracted from the resistor datasheet.",
@@ -121,21 +141,7 @@
                         "case": {},
                         "description": {},
                         "technology": {
-                            "type": "string",
-                            "enum": [
-                                "thinFilm",
-                                "thickFilm",
-                                "cermet",
-                                "metalFilm",
-                                "metalOxide",
-                                "wirewound",
-                                "carbonComposition",
-                                "carbonFilm",
-                                "metalFoil",
-                                "bulkMetalFoil",
-                                "currentSenseShunt",
-                                "melf"
-                            ]
+                            "$ref": "#/$defs/technology"
                         },
                         "matchcodeDescription": {
                             "type": "string"

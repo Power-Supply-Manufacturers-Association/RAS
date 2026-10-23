@@ -40,7 +40,7 @@ This separation follows the same principle as MAS: raw component data (cores, ma
 
 ## Supported Technologies
 
-The resistor `technology` field is a closed 12-value enum (`schemas/resistor.json`); the requirements-side `allowedTechnologies` uses the same values.
+The resistor `technology` field is a closed 13-value enum (`schemas/resistor.json#/$defs/technology`); the requirements-side `allowedTechnologies` `$ref`s the same named `$def`, so the two cannot drift.
 
 | Technology | Typical Use | Key Properties |
 |------------|-------------|----------------|
@@ -51,6 +51,7 @@ The resistor `technology` field is a closed 12-value enum (`schemas/resistor.jso
 | **metalOxide** | High voltage, flame-proof | High voltage rating, good surge capability |
 | **wirewound** | High power, current limiting | High power rating, low resistance values, inductive |
 | **carbonComposition** | Surge absorption, legacy designs | High pulse handling, high noise |
+| **ceramicComposition** | RC snubbers, inrush limiting, HV supplies | Solid ceramic-carbon bulk body; highest pulse energy and impulse voltage of the bulk types; 10 % tolerance |
 | **carbonFilm** | Low-cost general purpose (leaded) | Cheap, moderate performance |
 | **metalFoil** | Ultra-precision measurement | Extremely low TCR (<1 ppm/K), 0.01% tolerance |
 | **bulkMetalFoil** | Ultimate precision (Vishay bulk foil) | Best-in-class TCR and long-term stability |
@@ -95,7 +96,7 @@ flowchart TD
     Role -->|"High Power /<br/>Current Limiting"| Wirewound["wirewound<br/>High power rating<br/>Caution: inductive"]
 
     Role -->|"Surge Absorption /<br/>High Voltage"| Surge{"Requirement?"}
-    Surge -->|"High pulse energy"| Carbon["carbonComposition / melf<br/>High pulse handling"]
+    Surge -->|"High pulse energy"| Carbon["carbonComposition / ceramicComposition / melf<br/>High pulse handling"]
     Surge -->|"High voltage"| MetalOx["metalOxide<br/>High voltage, flame-proof"]
 ```
 
@@ -548,6 +549,7 @@ RAS/
 |     +-- 04_thermistor_sl22.json          # NTC inrush current limiter
 |     +-- 05_potentiometer_3296w_trimmer.json   # 25-turn cermet trimmer
 |     +-- 06_potentiometer_te_citec_dual.json   # Dual-gang carbon panel potentiometer
+|     +-- 07_resistor_te_ccr2_10k.json     # TE CGS CCR2 ceramic-composition snubber resistor
 +-- docs/
       +-- schema.md         # Detailed field-by-field schema reference
 ```

@@ -1,0 +1,126 @@
+{
+  "inputs": {
+    "operatingPoints": [
+      {
+        "name": "RC snubber, 50 kHz switching, 300 V edge pulses",
+        "conditions": {
+          "ambientTemperature": 70
+        },
+        "excitation": {
+          "frequency": 50000,
+          "voltage": {
+            "processed": {
+              "label": "unipolarRectangular",
+              "peak": 300,
+              "offset": 0,
+              "dutyCycle": 0.02
+            }
+          },
+          "current": {
+            "processed": {
+              "label": "unipolarRectangular",
+              "peak": 0.03,
+              "offset": 0,
+              "dutyCycle": 0.02
+            }
+          }
+        }
+      }
+    ],
+    "designRequirements": {
+      "name": "RC snubber resistor, 10 kohm 2 W, high pulse energy",
+      "deviceType": "resistor",
+      "resistance": {
+        "nominal": 10000
+      },
+      "powerRating": 2,
+      "allowedTechnologies": [
+        "ceramicComposition"
+      ]
+    }
+  },
+  "resistor": {
+    "manufacturerInfo": {
+      "name": "TE Connectivity",
+      "reference": "1623720-2",
+      "orderCode": "CCR210KKB",
+      "status": "production",
+      "datasheetInfo": {
+        "part": {
+          "partNumber": "1623720-2",
+          "series": "CGS CCR",
+          "technology": "ceramicComposition",
+          "description": "10K ohm, Ceramic Composition, Power Resistor, 10 %, 2 W, ±1300 ppm/°C, Axial-Leaded, Copper Termination, 19 x 7 mm, Loose Piece - Box, CGS CCR"
+        },
+        "electrical": {
+          "resistance": {
+            "nominal": 10000.0
+          },
+          "tolerance": 0.1,
+          "powerRating": 2.0,
+          "powerRatingTemperature": 70,
+          "maxVoltage": 400,
+          "maxOverloadVoltage": 800
+        },
+        "thermal": {
+          "operatingTemperature": {
+            "minimum": -40,
+            "maximum": 200
+          }
+        },
+        "mechanical": {
+          "assemblyType": "tht",
+          "shapeType": "axial",
+          "length": {
+            "nominal": 0.019,
+            "minimum": 0.018,
+            "maximum": 0.02
+          },
+          "diameter": {
+            "nominal": 0.007,
+            "minimum": 0.006,
+            "maximum": 0.008
+          }
+        },
+        "provenance": [
+          {
+            "source": "manufacturerParametric",
+            "sourceName": "TE Connectivity product catalogue (te.com)",
+            "sourceUrl": "https://www.te.com/en/product-1623720-2.html",
+            "retrievedDate": "2026-10-23",
+            "fields": [
+              "part.description",
+              "part.series",
+              "part.technology",
+              "electrical.resistance",
+              "electrical.tolerance",
+              "electrical.powerRating"
+            ],
+            "verification": "valuesReadFromSource",
+            "verificationDate": "2026-10-23"
+          },
+          {
+            "source": "manufacturerDatasheet",
+            "sourceName": "TE Connectivity, Ceramic Composition Resistors Type CCR Series, data sheet 1773193",
+            "sourceUrl": "https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1773193&DocType=Data%20Sheet&DocLang=English&DocFormat=pdf&PartCntxt=1623720-2",
+            "retrievedDate": "2026-10-24",
+            "fields": [
+              "electrical.powerRatingTemperature",
+              "electrical.maxVoltage",
+              "electrical.maxOverloadVoltage",
+              "thermal.operatingTemperature",
+              "mechanical.length",
+              "mechanical.diameter"
+            ],
+            "verification": "seriesConfirmed",
+            "verificationDate": "2026-10-24"
+          }
+        ]
+      }
+    },
+    "distributorsInfo": []
+  },
+  "outputs": [
+    {}
+  ]
+}

@@ -60,7 +60,7 @@ Inherited from PEAS `designRequirementsBase` (all optional): `name`, `market`, `
 | `minimumPulseEnergy` | number ≥ 0 | J | Minimum pulse-energy withstand requirement |
 | `maximumEsl` | number ≥ 0 | H | Maximum equivalent series inductance |
 | `role` | string (enum) | — | `currentSense`, `gate`, `snubber`, `damping`, `bleed`, `preCharge`, `inrush`, `divider`, `feedback`, `termination`, `pullUp`, `pullDown`, `fusible` |
-| `allowedTechnologies` | array (enum items) | — | Subset of the resistor [technology enum](#technology-enum-values) (same 12 values). Absent = all allowed. |
+| `allowedTechnologies` | array (enum items) | — | Subset of the resistor [technology enum](#technology-enum-values) — items `$ref` the part-side anchor `resistor.json#/$defs/technology`, so the two cannot drift. Absent = all allowed. |
 
 **Varistor branch** (`deviceType: "varistor"`) — **required: `ratedContinuousVoltage`**, plus **at least one of `minimumEnergyAbsorption` / `minimumPeakSurgeCurrent`** (`anyOf`; Joule-rated disc varistors vs. multilayer/ESD varistors that publish no Joule rating):
 
@@ -158,12 +158,14 @@ Basic part identification — an `allOf` extension of PEAS `datasheetInfoPartBas
 |-------|------|----------|-------------|
 | `partNumber` | string | Yes | Manufacturer part number (e.g., `"CRCW060310K0FKEA"`) |
 | `series` | string or null | No | Product series name (e.g., `"CRCW"`, `"WSK2512"`) |
-| `technology` | string (enum) | Yes | Resistor technology type |
+| `technology` | string (enum) | Yes | Resistor technology type — `$ref` to the named `$def` `resistor.json#/$defs/technology` |
 | `case` | string | No | Case or package code (e.g., `"0603"`, `"2512"`) |
 | `description` | string | No | Free-text part description as on the datasheet |
 | `matchcodeDescription` | string | No | Human-readable description of the part |
 
 ### technology enum values
+
+A named `$def` (`resistor.json#/$defs/technology`, 13 values) so requirement-side `allowedTechnologies` `$ref`s it and the two cannot drift.
 
 | Value | Description |
 |-------|-------------|
@@ -174,6 +176,7 @@ Basic part identification — an `allOf` extension of PEAS `datasheetInfoPartBas
 | `metalOxide` | Metal oxide -- metal oxide film on ceramic. High voltage, flame-proof. |
 | `wirewound` | Wirewound -- resistance wire wound on a core. High power, precise, but inductive. |
 | `carbonComposition` | Carbon composition -- carbon particles in a binder. High pulse handling. |
+| `ceramicComposition` | Ceramic composition -- solid bulk body of carbon held in a fired ceramic matrix (no film, no wire; the whole rod is the element). Very high single-pulse energy and impulse-voltage withstand (TE CCR: 10-20 kV), operation to 200 °C, wide tolerance (10 %, E12). RC snubbers, inrush limiters, HV supplies. Not carbonComposition, whose carbon sits in a hot-moulded organic binder. Added 2026-10. |
 | `carbonFilm` | Carbon film -- deposited carbon film. Low-cost general purpose leaded parts. |
 | `metalFoil` | Metal foil -- precision metal foil on ceramic. Ultra-low TCR, highest precision. |
 | `bulkMetalFoil` | Bulk metal foil -- Vishay-style bulk foil element. The ultimate in TCR and long-term stability. |

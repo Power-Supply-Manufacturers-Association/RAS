@@ -104,21 +104,7 @@
                             "description": "Subset of resistor technologies acceptable for this design. If absent, all technologies are allowed.",
                             "type": "array",
                             "items": {
-                                "type": "string",
-                                "enum": [
-                                    "thinFilm",
-                                    "thickFilm",
-                                    "cermet",
-                                    "metalFilm",
-                                    "metalOxide",
-                                    "wirewound",
-                                    "carbonComposition",
-                                    "carbonFilm",
-                                    "metalFoil",
-                                    "bulkMetalFoil",
-                                    "currentSenseShunt",
-                                    "melf"
-                                ]
+                                "$ref": "https://psma.com/ras/resistor.json#/$defs/technology"
                             },
                             "minItems": 1,
                             "uniqueItems": true
