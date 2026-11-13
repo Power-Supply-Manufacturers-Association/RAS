@@ -104,6 +104,14 @@
                 "electrical": {
                     "$ref": "#/$defs/electrical"
                 },
+                "elements": {
+                    "description": "One entry per resistor element in a network / array whose elements DIFFER (different resistance, tolerance or power rating per element, e.g. a divider or terminator network). Present INSTEAD OF the package-level electrical block, never beside it: such a network has no single resistance, and leaving a package-level slot open is what lets one element's numbers be recorded as the part's. A network of identical elements does NOT use elements[]: it keeps the one electrical block and states electrical.numberOfElements. The count is the length of elements[]. Order carries no meaning; elements are identified by name. (The RAS counterpart of SAS dies[].)",
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                        "$ref": "#/$defs/element"
+                    }
+                },
                 "thermal": {
                     "$ref": "./utils.json#/$defs/thermal"
                 },
@@ -122,9 +130,116 @@
                 }
             },
             "required": [
-                "part",
-                "electrical"
+                "part"
+            ],
+            "oneOf": [
+                {
+                    "required": [
+                        "electrical"
+                    ],
+                    "not": {
+                        "required": [
+                            "elements"
+                        ]
+                    }
+                },
+                {
+                    "required": [
+                        "elements"
+                    ],
+                    "not": {
+                        "required": [
+                            "electrical"
+                        ]
+                    }
+                }
+            ],
+            "allOf": [
+                {
+                    "$comment": "An internal connection relates elements: only a network (a count of identical elements, or elements[]) can state one.",
+                    "if": {
+                        "required": [
+                            "part"
+                        ],
+                        "properties": {
+                            "part": {
+                                "required": [
+                                    "internalConnection"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "elements"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "electrical"
+                                ],
+                                "properties": {
+                                    "electrical": {
+                                        "required": [
+                                            "numberOfElements"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             ]
+        },
+        "element": {
+            "title": "resistorElement",
+            "description": "One resistor element inside a network / array whose elements differ, with the complete electrical block the discrete file already defines \u2014 the same physics and the same field names as a discrete resistor, stated once per element. Every element states its own values even when the datasheet prints them as equal ('R1 = R2'), so 'both elements are 10 kOhm' and 'the part is 10 kOhm' are different documents.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "electrical"
+            ],
+            "properties": {
+                "name": {
+                    "description": "The datasheet's own label for this element \u2014 'R1', 'R2'. Unique within the part. Taken verbatim and never invented: a datasheet that does not distinguish its elements gives no element entries to write.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "role": {
+                    "description": "The datasheet's functional name for the element where it gives one ('pull-up', 'termination'), verbatim. Free text because vendors do not share a vocabulary; it is a label, never a substitute for the electrical data.",
+                    "type": "string"
+                },
+                "pins": {
+                    "description": "Pin identifiers belonging to this element, matching entries of mechanical.pinout, so a circuit can bind to one element rather than to the package. A pin shared by several elements (the common terminal of a bussed network) is listed in the pins of EACH element it belongs to, consistent with part.internalConnection. The schema cannot check that the pinout contains these ids or that names are unique \u2014 that is the ingest gate's job.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "electrical": {
+                    "description": "The complete electrical block, per element. numberOfElements is not legal here: one entry is one element.",
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/electrical"
+                        },
+                        {
+                            "not": {
+                                "required": [
+                                    "numberOfElements"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "thermal": {
+                    "description": "Per-element thermal figures where the datasheet gives them. The package-level figure stays in datasheetInfo.thermal.",
+                    "$ref": "./utils.json#/$defs/thermal"
+                }
+            }
         },
         "part": {
             "title": "resistorPart",
@@ -145,6 +260,14 @@
                         },
                         "matchcodeDescription": {
                             "type": "string"
+                        },
+                        "internalConnection": {
+                            "description": "How the elements of a resistor network / array are wired to each other INSIDE the package, when the datasheet says so. 'isolated' = no internal connection, each element has its own two terminals (Panasonic 'Isolated Circuit', Bourns 'Isolated'); 'bussed' = one end of every element is tied to a common terminal (Panasonic 'Common Terminal Circuit', Bourns 'Bussed'). Omit when the datasheet does not state it, or when its circuit is neither of these (e.g. dual-terminator networks, Panasonic 'Center Common' / 'Diagonal Common'): describe those through mechanical.pinout \u2014 do not infer the arrangement from the package or the part number. Only legal on a network (electrical.numberOfElements or elements[]).",
+                            "type": "string",
+                            "enum": [
+                                "isolated",
+                                "bussed"
+                            ]
                         }
                     },
                     "additionalProperties": false,
@@ -156,10 +279,15 @@
         },
         "electrical": {
             "title": "resistorElectrical",
-            "description": "Resistor electrical characteristics.",
+            "description": "Resistor electrical characteristics. For a network / array of identical elements (electrical.numberOfElements), every value here is PER ELEMENT, never the package total.",
             "type": "object",
             "additionalProperties": false,
             "properties": {
+                "numberOfElements": {
+                    "description": "Number of IDENTICAL resistor elements in a network / array that this one electrical block describes (Panasonic 'Number of Elements'); every other value in the block is per element \u2014 resistance, tolerance and powerRating are the per-element figures the datasheet prints, never a package total (a package-level power rating, where printed, is not this field). A discrete resistor omits it. A network whose elements differ has no electrical block and no count field: it is described in datasheetInfo.elements[], whose length is the count.",
+                    "type": "integer",
+                    "minimum": 2
+                },
                 "resistance": {
                     "description": "Nominal resistance, in Ohms.",
                     "$ref": "https://psma.com/peas/utils.json#/$defs/dimensionWithTolerance"

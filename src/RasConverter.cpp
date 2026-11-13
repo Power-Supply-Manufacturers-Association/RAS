@@ -43,7 +43,14 @@ double resolve_resistance(const json& peas, const PEAS::Fidelity& fidelity) {
             if (mp->get_r()) return *mp->get_r();
         }
     }
-    return PEAS::resolve_dimensional_values(datasheet.get_electrical().get_resistance());
+    // A network whose elements differ carries per-element electricals (elements[]) and NO package-level
+    // block; a two-terminal leaf cannot pick an element on the caller's behalf.
+    const auto& elec = datasheet.get_electrical();
+    if (!elec)
+        throw std::runtime_error("RAS real: datasheetInfo has no package-level electrical (a network of differing "
+                                 "elements carries per-element electricals in elements[]); a resistor leaf needs "
+                                 "one element's resistance");
+    return PEAS::resolve_dimensional_values(elec->get_resistance());
 }
 
 // A minimal ideal-resistor leaf atom carrying just the value in inputs.designRequirements — where
