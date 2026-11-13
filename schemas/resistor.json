@@ -262,11 +262,13 @@
                             "type": "string"
                         },
                         "internalConnection": {
-                            "description": "How the elements of a resistor network / array are wired to each other INSIDE the package, when the datasheet says so. 'isolated' = no internal connection, each element has its own two terminals (Panasonic 'Isolated Circuit', Bourns 'Isolated'); 'bussed' = one end of every element is tied to a common terminal (Panasonic 'Common Terminal Circuit', Bourns 'Bussed'). Omit when the datasheet does not state it, or when its circuit is neither of these (e.g. dual-terminator networks, Panasonic 'Center Common' / 'Diagonal Common'): describe those through mechanical.pinout \u2014 do not infer the arrangement from the package or the part number. Only legal on a network (electrical.numberOfElements or elements[]).",
+                            "description": "How the elements of a resistor network / array are wired to each other INSIDE the package, when the datasheet says so. 'isolated' = no internal connection, each element has its own two terminals (Panasonic 'Isolated Circuit', Bourns 'Isolated'); 'bussed' = one end of every element is tied to a common terminal (Panasonic 'Common Terminal Circuit', Bourns 'Bussed'); 'centerCommon' = every element tied to a common terminal at the centre of the package (Panasonic 'Center Common'); 'diagonalCommon' = elements tied to a common terminal at a diagonal corner pin (Panasonic 'Diagonal Common, Pin1' / 'Pin5'; which pin goes in mechanical.pinout). Omit when the datasheet does not state it, or when its circuit is none of these (e.g. dual-terminator networks): describe those through mechanical.pinout \u2014 do not infer the arrangement from the package or the part number. Only legal on a network (electrical.numberOfElements or elements[]).",
                             "type": "string",
                             "enum": [
                                 "isolated",
-                                "bussed"
+                                "bussed",
+                                "centerCommon",
+                                "diagonalCommon"
                             ]
                         }
                     },
